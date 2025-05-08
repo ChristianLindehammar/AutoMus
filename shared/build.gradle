@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
+
 android {
     namespace 'com.lindehammarkonsult.automus.shared'
     compileSdkVersion 35
@@ -12,11 +13,48 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 }
 
 dependencies {
+    // Base Android dependencies
     implementation libs.androidx.media
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    
+    // ExoPlayer for media playback
+    implementation libs.exoplayer.core
+    implementation libs.exoplayer.ui
+    
+    // Networking
+    implementation libs.retrofit
+    implementation libs.retrofit.moshi
+    implementation libs.okhttp
+    implementation libs.okhttp.logging
+    implementation libs.moshi
+    implementation libs.moshi.adapters
+    
+    // Coroutines
+    implementation libs.coroutines.core
+    implementation libs.coroutines.android
+    
+    // Lifecycle components
+    implementation libs.lifecycle.viewmodel
+    implementation libs.lifecycle.runtime
+    implementation libs.lifecycle.livedata
+    
+    // Security for token handling
+    implementation libs.security.crypto
+    
+    // Testing
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
 }

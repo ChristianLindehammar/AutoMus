@@ -1,0 +1,103 @@
+1. Core Functional Requirements
+🔊 Music Playback
+Play, pause, skip, repeat, shuffle Apple Music tracks
+
+Queue management: View and modify current playback queue
+
+Now Playing screen with track title, artist, album art, and playback controls
+
+Audio focus handling: Respect Android Automotive OS standards for handling focus and audio interruptions (e.g., navigation prompts)
+
+🔍 Music Discovery & Search
+Search Apple Music library by song, album, artist, playlist, or genre
+
+Browse curated content: Access Apple Music’s top charts, new releases, and editorial playlists
+
+Category browsing: By genre, mood, activity, etc.
+
+📚 Library Access
+Access user’s Apple Music library (including:
+
+Playlists (created and saved)
+
+Liked or loved songs
+
+Recently played
+
+Followed artists and albums
+
+🗣️ Voice Support (if supported by car system)
+Support Google Assistant or built-in voice command for playback (e.g., “Play Taylor Swift on Apple Music”)
+
+🔹 2. Additional / Unique Requirements
+🍎 Apple Music Integration
+This is the most critical and challenging part:
+
+Apple Music API Usage: Use Apple MusicKit for Web (since no native Android SDK is provided by Apple)
+
+User Authentication via Apple ID & Apple Music subscription check
+
+Playback Authorization: Likely using a web-based player via secure token
+
+Music Playback may require:
+
+AirPlay fallback (less ideal) or
+
+Creative use of MusicKit JS in a WebView for authorized playback
+
+Or using Apple Music on Android’s local app if Apple provides any hooks (which is unlikely)
+
+🔐 Authentication
+OAuth-style Apple ID login flow with secure token handling
+
+Securely store and refresh tokens using Android Keystore
+
+🔹 3. Usability & UX Best Practices (for In-Car Use)
+Follow Google’s Android Automotive UX Guidelines:
+
+Large, high-contrast tap targets (minimum 48x48dp)
+
+Minimal driver distraction: No text input while driving
+
+Avoid complex interactions (e.g., scrolling long lists)
+
+Support for day/night modes (light and dark themes)
+
+Clear “Now Playing” feedback visible at all times
+
+Touch interaction optimized for glove-friendly UIs
+
+Support rotary controllers or D-pads (for vehicles with physical input)
+
+Accessibility
+
+Voice support where available
+
+Descriptive content labels for screen readers
+
+🔹 4. Technical & Platform-Specific Requirements
+Android Automotive OS-Specific:
+Build for Android Automotive OS (AAOS), not just Android Auto (embedded vs projection)
+
+Support for car hardware abstraction layer (Car HAL) if needed
+
+MediaBrowserService and MediaSession integration
+
+Use ExoPlayer (if handling playback natively)
+
+Offline & Connectivity
+Detect poor or no internet connection gracefully
+
+Fallback UI for offline state (e.g., downloaded playlists or warning)
+
+Localization
+Support multiple languages, beginning with English
+
+Right-to-left layout support (if supporting Arabic/Hebrew)
+
+Legal & Licensing
+Verify licensing for playback from Apple Music—may be restricted to Apple platforms
+
+Clear terms of use and privacy policy
+
+Must not imply official Apple endorsement

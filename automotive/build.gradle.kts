@@ -26,20 +26,38 @@ android {
             )
         }
     }
+    
+    buildFeatures {
+        viewBinding = true
+    }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    
     kotlinOptions {
         jvmTarget = "11"
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(project(":shared"))
+    
+    // Automotive
+    implementation(libs.car)
+    implementation(libs.car.cluster)
+    
+    // UI
+    implementation(libs.material)
+    
+    // Lifecycle
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.lifecycle.runtime)
+    implementation(libs.lifecycle.livedata)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
