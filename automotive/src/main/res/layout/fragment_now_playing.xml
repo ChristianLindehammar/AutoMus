@@ -16,6 +16,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageButton
+        android:id="@+id/favorite_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Like or unlike this track"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_heart_outline" />
+
     <ImageView
         android:id="@+id/album_art"
         android:layout_width="0dp"
@@ -23,12 +33,12 @@
         android:layout_marginTop="24dp"
         android:contentDescription="Album artwork"
         android:scaleType="centerCrop"
+        android:src="@drawable/album_art_placeholder"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/back_button"
-        app:layout_constraintWidth_percent="0.6"
-        tools:src="@drawable/ic_launcher_background" />
+        app:layout_constraintWidth_percent="0.6" />
 
     <TextView
         android:id="@+id/song_title_text"
@@ -72,6 +82,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/artist_text"
         tools:text="Album Name" />
+
+    <ImageView
+        android:id="@+id/download_status"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="Downloaded for offline playback"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/album_text"
+        app:layout_constraintTop_toTopOf="@+id/album_text"
+        app:layout_constraintBottom_toBottomOf="@+id/album_text"
+        app:srcCompat="@drawable/ic_downloaded"
+        tools:visibility="visible" />
 
     <SeekBar
         android:id="@+id/seek_bar"

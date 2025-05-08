@@ -13,21 +13,22 @@
         android:layout_height="48dp"
         android:scaleType="centerCrop"
         android:contentDescription="Album art"
+        android:src="@drawable/album_art_placeholder"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:src="@tools:sample/avatars" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <TextView
         android:id="@+id/tvTrackTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textAppearance="?attr/textAppearanceSubtitle1"
         app:layout_constraintStart_toEndOf="@+id/ivAlbumArt"
-        app:layout_constraintEnd_toStartOf="@+id/btnPlayPause"
+        app:layout_constraintEnd_toStartOf="@+id/indicator_layout"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/tvArtist"
         tools:text="Song Title" />
@@ -37,14 +38,44 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textAppearance="?attr/textAppearanceCaption"
         app:layout_constraintStart_toEndOf="@+id/ivAlbumArt"
-        app:layout_constraintEnd_toStartOf="@+id/btnPlayPause"
+        app:layout_constraintEnd_toStartOf="@+id/indicator_layout"
         app:layout_constraintTop_toBottomOf="@+id/tvTrackTitle"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="Artist Name" />
+
+    <LinearLayout
+        android:id="@+id/indicator_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toStartOf="@+id/btnPlayPause"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/mini_favorite_indicator"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="4dp"
+            android:visibility="gone"
+            android:contentDescription="Favorite track"
+            app:srcCompat="@drawable/ic_heart_filled"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/mini_download_indicator"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:visibility="gone"
+            android:contentDescription="Downloaded for offline playback"
+            app:srcCompat="@drawable/ic_downloaded"
+            tools:visibility="visible" />
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/btnPlayPause"
