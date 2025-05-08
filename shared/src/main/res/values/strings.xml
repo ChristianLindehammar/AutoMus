@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Apple Music Authentication -->
+    <string name="apple_music_logo_description">Apple Music Logo</string>
+    <string name="apple_music_auth_title">Apple Music Authentication</string>
+    <string name="apple_music_auth_description">Sign in with your Apple ID to access Apple Music streaming services in AutoMus</string>
+    <string name="please_sign_in">Please sign in to Apple Music</string>
+    <string name="sign_in_with_apple_music">Sign in with Apple Music</string>
+    <string name="cancel">Cancel</string>
+    <string name="auth_success">Authentication successful</string>
+    <string name="auth_error">Authentication error</string>
+    <string name="auth_canceled">Authentication canceled</string>
+</resources>

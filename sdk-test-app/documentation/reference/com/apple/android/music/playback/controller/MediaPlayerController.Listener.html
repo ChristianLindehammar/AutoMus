@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <meta name="description" content="Javadoc API documentation." />
+
+<link rel="shortcut icon" type="image/x-icon" href="../../../../../../favicon.ico" />
+<title>
+
+  MediaPlayerController.Listener
+
+
+</title>
+<link href="../../../../../../../assets/doclava-developer-docs.css" rel="stylesheet" type="text/css" />
+<link href="../../../../../../../assets/customizations.css" rel="stylesheet" type="text/css" />
+<script src="../../../../../../../assets/search_autocomplete.js" type="text/javascript"></script>
+<script src="../../../../../../../assets/jquery-resizable.min.js" type="text/javascript"></script>
+<script src="../../../../../../../assets/doclava-developer-docs.js" type="text/javascript"></script>
+<script src="../../../../../../../assets/prettify.js" type="text/javascript"></script>
+<script type="text/javascript">
+  setToRoot("../../../../../../", "../../../../../../../assets/");
+</script>
+<script src="../../../../../../../assets/doclava-developer-reference.js" type="text/javascript"></script>
+<script src="../../../../../../../assets/navtree_data.js" type="text/javascript"></script>
+<script src="../../../../../../../assets/customizations.js" type="text/javascript"></script>
+<noscript>
+  <style type="text/css">
+    html,body{overflow:auto;}
+    #body-content{position:relative; top:0;}
+    #doc-content{overflow:visible;border-left:3px solid #666;}
+    #side-nav{padding:0;}
+    #side-nav .toggle-list ul {display:block;}
+    #resize-packages-nav{border-bottom:3px solid #666;}
+  </style>
+</noscript>
+</head>
+
+<body class="">
+
+<div id="header">
+    <div id="headerLeft">
+    
+    </div>
+    <div id="headerRight">
+      
+  <div id="search" >
+      <div id="searchForm">
+          <form accept-charset="utf-8" class="gsc-search-box" 
+                onsubmit="return submit_search()">
+            <table class="gsc-search-box" cellpadding="0" cellspacing="0"><tbody>
+                <tr>
+                  <td class="gsc-input">
+                    <input id="search_autocomplete" class="gsc-input" type="text" size="33" autocomplete="off"
+                      title="search developer docs" name="q"
+                      value="search developer docs"
+                      onFocus="search_focus_changed(this, true)"
+                      onBlur="search_focus_changed(this, false)"
+                      onkeydown="return search_changed(event, true, '../../../../../../')"
+                      onkeyup="return search_changed(event, false, '../../../../../../')" />
+                  <div id="search_filtered_div" class="no-display">
+                      <table id="search_filtered" cellspacing=0>
+                      </table>
+                  </div>
+                  </td>
+                  <td class="gsc-search-button">
+                    <input type="submit" value="Search" title="search" id="search-button" class="gsc-search-button" />
+                  </td>
+                  <td class="gsc-clear-button">
+                    <div title="clear results" class="gsc-clear-button">&nbsp;</div>
+                  </td>
+                </tr></tbody>
+              </table>
+          </form>
+      </div><!-- searchForm -->
+  </div><!-- search -->
+      
+    </div>
+</div><!-- header -->
+
+
+  <div class="g-section g-tpl-240" id="body-content">
+    <div class="g-unit g-first side-nav-resizable" id="side-nav">
+      <div id="swapper">
+        <div id="nav-panels">
+          <div id="resize-packages-nav">
+            <div id="packages-nav">
+              <div id="index-links">
+                <a href="../../../../../../packages.html"  >Package Index</a> | 
+                <a href="../../../../../../classes.html" >Class Index</a>
+              </div>
+              <ul>
+                
+    <li class="selected api apilevel-">
+  <a href="../../../../../../com/apple/android/music/playback/controller/package-summary.html">com.apple.android.music.playback.controller</a></li>
+    <li class="api apilevel-">
+  <a href="../../../../../../com/apple/android/music/playback/model/package-summary.html">com.apple.android.music.playback.model</a></li>
+    <li class="api apilevel-">
+  <a href="../../../../../../com/apple/android/music/playback/queue/package-summary.html">com.apple.android.music.playback.queue</a></li>
+              </ul><br/>
+            </div> <!-- end packages -->
+          </div> <!-- end resize-packages -->
+          <div id="classes-nav">
+            <ul>
+              
+    <li><h2>Interfaces</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></li>
+          <li class="selected api apilevel-"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html">MediaPlayerController.Listener</a></li>
+      </ul>
+    </li>
+              
+    <li><h2>Classes</h2>
+      <ul>
+          <li class="api apilevel-"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerControllerFactory.html">MediaPlayerControllerFactory</a></li>
+      </ul>
+    </li>
+              
+              
+              
+              
+            </ul><br/>
+          </div><!-- end classes -->
+        </div><!-- end nav-panels -->
+        <div id="nav-tree" style="display:none">
+          <div id="index-links">
+            <a href="../../../../../../packages.html"  >Package Index</a> | 
+            <a href="../../../../../../classes.html" >Class Index</a>
+          </div>
+        </div><!-- end nav-tree -->
+      </div><!-- end swapper -->
+    </div> <!-- end side-nav -->
+    <script>
+      if (!isMobile) {
+        $("<a href='#' id='nav-swap' onclick='swapNav();return false;' style='font-size:10px;line-height:9px;margin-left:1em;text-decoration:none;'><span id='tree-link'>Use Tree Navigation</span><span id='panel-link' style='display:none'>Use Panel Navigation</span></a>").appendTo("#side-nav");
+        chooseDefaultNav();
+        if ($("#nav-tree").is(':visible')) {
+          init_default_navtree("../../../../../../");
+        } else {
+          addLoadEvent(function() {
+            scrollIntoView("packages-nav");
+            scrollIntoView("classes-nav");
+          });
+        }
+        $("#swapper").css({borderBottom:"2px solid #aaa"});
+      } else {
+        swapNav(); // tree view should be used on mobile
+      }
+    </script>
+
+
+
+<div class="g-unit" id="doc-content">
+
+<div id="api-info-block">
+
+
+
+
+<div class="sum-details-links">
+
+
+</div><!-- end sum-details-links -->
+<div class="api-level">
+  
+
+
+  
+  
+
+</div>
+</div><!-- end api-info-block -->
+
+
+<!-- ======== START OF CLASS DATA ======== -->
+
+<div id="jd-header">
+    public
+    static 
+     
+    
+    interface
+<h1>MediaPlayerController.Listener</h1>
+
+
+
+  
+  
+  
+
+
+</div><!-- end header -->
+
+<div id="naMessage"></div>
+
+<div id="jd-content" class="api apilevel-">
+<table class="jd-inheritance-table">
+
+
+    <tr>
+         	
+        <td colspan="1" class="jd-inheritance-class-cell">com.apple.android.music.playback.controller.MediaPlayerController.Listener</td>
+    </tr>
+    
+
+</table>
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Class Overview</h2>
+<p>Interface defining callbacks that a <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> can call on registered listeners.
+ These methods will be called on the application's main thread,
+ or the android.os.Looper specified at construction time.
+</p>
+
+
+
+
+
+</div><!-- jd-descr -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="jd-descr">
+
+
+<h2>Summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ========== METHOD SUMMARY =========== -->
+<table id="pubmethods" class="jd-sumtable"><tr><th colspan="12">Public Methods</th></tr>
+
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onBufferingStateChanged(com.apple.android.music.playback.controller.MediaPlayerController, boolean)">onBufferingStateChanged</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, boolean buffering)
+        
+        <div class="jd-descrdiv">Callback indicating that the buffering state for the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has changed.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onCurrentItemChanged(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.PlayerQueueItem, com.apple.android.music.playback.model.PlayerQueueItem)">onCurrentItemChanged</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> previousItem, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> currentItem)
+        
+        <div class="jd-descrdiv">Callback indicating that the current item for the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has changed.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onItemEnded(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.PlayerQueueItem, long)">onItemEnded</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> queueItem, long endPosition)
+        
+        <div class="jd-descrdiv">Callback indicating that playback of the specified item has ended.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onMetadataUpdated(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.PlayerQueueItem)">onMetadataUpdated</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> currentItem)
+        
+        <div class="jd-descrdiv">Callback indicating that the metadata of the currently playing item has updated.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlaybackError(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.MediaPlayerException)">onPlaybackError</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/MediaPlayerException.html">MediaPlayerException</a> error)
+        
+        <div class="jd-descrdiv">Callback indicating that an error occurred during playback.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlaybackQueueChanged(com.apple.android.music.playback.controller.MediaPlayerController, java.util.List<com.apple.android.music.playback.model.PlayerQueueItem>)">onPlaybackQueueChanged</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, List&lt;<a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a>&gt; playbackQueueItems)
+        
+        <div class="jd-descrdiv">Callback indicating that the items in the current playback queue have changed.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlaybackQueueItemsAdded(com.apple.android.music.playback.controller.MediaPlayerController, int, int, int)">onPlaybackQueueItemsAdded</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int queueInsertionType, int containerType, int itemType)
+        
+        <div class="jd-descrdiv">Callback indicating that items have been added to the playback queue.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlaybackRepeatModeChanged(com.apple.android.music.playback.controller.MediaPlayerController, int)">onPlaybackRepeatModeChanged</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int currentRepeatMode)
+        
+        <div class="jd-descrdiv">Callback indicating that the current repeat mode has changed.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlaybackShuffleModeChanged(com.apple.android.music.playback.controller.MediaPlayerController, int)">onPlaybackShuffleModeChanged</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int currentShuffleMode)
+        
+        <div class="jd-descrdiv">Callback indicating that the current shuffle mode has changed.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlaybackStateChanged(com.apple.android.music.playback.controller.MediaPlayerController, int, int)">onPlaybackStateChanged</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int previousState, int currentState)
+        
+        <div class="jd-descrdiv">Callback indicating that the <code><a href="../../../../../../com/apple/android/music/playback/model/PlaybackState.html">PlaybackState</a></code> for the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has changed.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class="alt-color api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlaybackStateUpdated(com.apple.android.music.playback.controller.MediaPlayerController)">onPlaybackStateUpdated</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController)
+        
+        <div class="jd-descrdiv">Callback indicating that an update to the current playback state data occurred.</div>
+  
+  </td></tr>
+
+
+	 
+    <tr class=" api apilevel-" >
+        <td class="jd-typecol">
+            abstract
+            
+            
+            
+            
+            void
+        </td>
+        <td class="jd-linkcol" width="100%">
+        <span class="sympad"><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.Listener.html#onPlayerStateRestored(com.apple.android.music.playback.controller.MediaPlayerController)">onPlayerStateRestored</a></span>(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController)
+        
+        <div class="jd-descrdiv">Callback indicating that the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has finished loading any previously saved state.</div>
+  
+  </td></tr>
+
+
+
+</table>
+
+
+
+
+
+
+
+</div><!-- jd-descr (summary) -->
+
+<!-- Details -->
+
+
+
+
+
+
+
+
+<!-- XML Attributes -->
+
+
+<!-- Enum Values -->
+
+
+<!-- Constants -->
+
+
+<!-- Fields -->
+
+
+<!-- Public ctors -->
+
+
+
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<!-- Protected ctors -->
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+<!-- Public methdos -->
+
+<h2>Public Methods</h2>
+
+
+
+<a id="onBufferingStateChanged(com.apple.android.music.playback.controller.MediaPlayerController, boolean)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onBufferingStateChanged</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, boolean buffering)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the buffering state for the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has changed.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>buffering</th>
+          <td>True if the player is currently buffering, false otherwise.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onCurrentItemChanged(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.PlayerQueueItem, com.apple.android.music.playback.model.PlayerQueueItem)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onCurrentItemChanged</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> previousItem, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> currentItem)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the current item for the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has changed.
+ This could be as a result of a new queue being loaded, a user skip, or a natural end of the previous item.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>previousItem</th>
+          <td>The previous item, or null.</td>
+        </tr>
+        <tr>
+          <th>currentItem</th>
+          <td>The current item, or null.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onItemEnded(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.PlayerQueueItem, long)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onItemEnded</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> queueItem, long endPosition)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that playback of the specified item has ended. This can be due to a
+ natural end of the media, or as the result of a skip or stop action.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>queueItem</th>
+          <td>The item which has completed playback.</td>
+        </tr>
+        <tr>
+          <th>endPosition</th>
+          <td>The position, in milliseconds, that the playhead was at when the item ended.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onMetadataUpdated(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.PlayerQueueItem)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onMetadataUpdated</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a> currentItem)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the metadata of the currently playing item has updated.
+ This usually occurs when playing a live stream.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>currentItem</th>
+          <td>The current item with updated metadata.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlaybackError(com.apple.android.music.playback.controller.MediaPlayerController, com.apple.android.music.playback.model.MediaPlayerException)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlaybackError</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, <a href="../../../../../../com/apple/android/music/playback/model/MediaPlayerException.html">MediaPlayerException</a> error)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that an error occurred during playback.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>error</th>
+          <td>The error that occurred.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlaybackQueueChanged(com.apple.android.music.playback.controller.MediaPlayerController, java.util.List<com.apple.android.music.playback.model.PlayerQueueItem>)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlaybackQueueChanged</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, List&lt;<a href="../../../../../../com/apple/android/music/playback/model/PlayerQueueItem.html">PlayerQueueItem</a>&gt; playbackQueueItems)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the items in the current playback queue have changed.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>playbackQueueItems</th>
+          <td>A list of PlayerQueueItems representing the current state of the playback queue.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlaybackQueueItemsAdded(com.apple.android.music.playback.controller.MediaPlayerController, int, int, int)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlaybackQueueItemsAdded</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int queueInsertionType, int containerType, int itemType)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that items have been added to the playback queue.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>queueInsertionType</th>
+          <td>The queue insertion type used to add items to the playback queue.</td>
+        </tr>
+        <tr>
+          <th>containerType</th>
+          <td>The MediaContainerType for the items which were added to the playback queue.</td>
+        </tr>
+        <tr>
+          <th>itemType</th>
+          <td>The MediaItemType for the items which were added to the playback queue.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlaybackRepeatModeChanged(com.apple.android.music.playback.controller.MediaPlayerController, int)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlaybackRepeatModeChanged</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int currentRepeatMode)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the current repeat mode has changed.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>currentRepeatMode</th>
+          <td>The current repeat mode.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlaybackShuffleModeChanged(com.apple.android.music.playback.controller.MediaPlayerController, int)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlaybackShuffleModeChanged</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int currentShuffleMode)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the current shuffle mode has changed.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>currentShuffleMode</th>
+          <td>The current shuffle mode.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlaybackStateChanged(com.apple.android.music.playback.controller.MediaPlayerController, int, int)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlaybackStateChanged</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController, int previousState, int currentState)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the <code><a href="../../../../../../com/apple/android/music/playback/model/PlaybackState.html">PlaybackState</a></code> for the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has changed.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.</td>
+        </tr>
+        <tr>
+          <th>previousState</th>
+          <td>The previous PlaybackState.</td>
+        </tr>
+        <tr>
+          <th>currentState</th>
+          <td>The current PlaybackState.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlaybackStateUpdated(com.apple.android.music.playback.controller.MediaPlayerController)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlaybackStateUpdated</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that an update to the current playback state data occurred.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+<a id="onPlayerStateRestored(com.apple.android.music.playback.controller.MediaPlayerController)"></a>
+
+<div class="jd-details api apilevel-"> 
+    <h4 class="jd-details-title">
+      <span class="normal">
+        public 
+         
+         
+        abstract 
+         
+        void
+      </span>
+      <span class="sympad">onPlayerStateRestored</span>
+      <span class="normal">(<a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a> playerController)</span>
+    </h4>
+      <div class="api-level">
+        <div>
+
+</div>
+        
+  
+
+      </div>
+    <div class="jd-details-descr">
+      
+  <div class="jd-tagdata jd-tagdescr"><p>Callback indicating that the specified <code><a href="../../../../../../com/apple/android/music/playback/controller/MediaPlayerController.html">MediaPlayerController</a></code> has finished loading any previously saved state.</p></div>
+  <div class="jd-tagdata">
+      <h5 class="jd-tagtitle">Parameters</h5>
+      <table class="jd-tagtable">
+        <tr>
+          <th>playerController</th>
+          <td>A MediaPlayerController instance.
+</td>
+        </tr>
+      </table>
+  </div>
+
+    </div>
+</div>
+
+
+
+
+
+<!-- ========= METHOD DETAIL ======== -->
+
+
+
+<!-- ========= END OF CLASS DATA ========= -->
+<a id="navbar_top"></a>
+
+<div id="footer">
+Generated by <a href="http://code.google.com/p/doclava/">Doclava</a>.
+</div> <!-- end footer -->
+
+</div> <!-- jd-content -->
+
+</div><!-- end doc-content -->
+
+</div> <!-- end body-content --> 
+
+<script type="text/javascript">
+init(); /* initialize doclava-developer-docs.js */
+</script>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+[
+  {
+    "id" : "1233495633",
+    "title" : "Protest Song",
+    "subtitle" : "Broken Social Scene",
+    "description" : "Hug of Thunder",
+    "browseable" : false,
+    "playable" : true,
+    "iconUri" : "http://is2.mzstatic.com/image/thumb/Music117/v4/cf/e2/9e/cfe29e4e-327b-a3b8-17d8-79ce120e5717/source/512x512bb.jpg",
+    "type" : "song"
+  },
+  {
+    "id" : "1242366660",
+    "title" : "A Deeper Understanding",
+    "subtitle" : "The War on Drugs",
+    "description" : "",
+    "browseable" : false,
+    "playable" : true,
+    "iconUri" : "http://is1.mzstatic.com/image/thumb/Music117/v4/1d/ab/b6/1dabb6a7-d576-b190-37e5-fb26963d0613/source/512x512bb.jpg",
+    "type" : "album"
+  },
+  {
+    "id" : "pl.40bd95ba91d844a6baf639ffa9d5b801",
+    "title" : "Tycho Essentials",
+    "subtitle" : "Apple Music Electronic",
+    "description" : "",
+    "browseable" : false,
+    "playable" : true,
+    "iconUri" : "http://is2.mzstatic.com/image/thumb/Features122/v4/8d/24/30/8d24300d-9040-46fe-e744-fd7b06a78433/source/512x512cc.jpg",
+    "type" : "playlist"
+  },
+  {
+    "id" : "pl.b2b67b61437a450291f953624e723cb0",
+    "title" : "I Miss '90s Indie Rock",
+    "subtitle" : "Apple Music Rock",
+    "description" : "",
+    "browseable" : false,
+    "playable" : true,
+    "iconUri" : "http://is5.mzstatic.com/image/thumb/Features128/v4/f4/6d/a2/f46da2b1-5045-0f1c-def4-e015c930a254/source/512x512cc.jpg",
+    "type" : "playlist"
+  }
+]

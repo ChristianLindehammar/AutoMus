@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
@@ -14,9 +13,6 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.media.MediaBrowserServiceCompat
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem as ExoMediaItem
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.lindehammarkonsult.automus.shared.model.*
 import com.lindehammarkonsult.automus.shared.repository.AppleMusicRepository
@@ -28,12 +24,11 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "AppleMusicService"
 private const val ROOT_ID = "root"
-private const val MEDIA_ROOT_ID = "media_root_id"
 private const val EMPTY_ROOT_ID = "empty_root_id"
-private const val BROWSE_ERROR = "browse_error"
 
 /**
- * Implementation of a MediaBrowserServiceCompat for Apple Music streaming.
+ * Implementation of a MediaBrowserServiceCompat for Apple Music streaming 
+ * using Apple's MusicKit SDK for Android.
  */
 class AppleMusicService : MediaBrowserServiceCompat() {
 
@@ -41,36 +36,39 @@ class AppleMusicService : MediaBrowserServiceCompat() {
     private lateinit var mediaSessionConnector: MediaSessionConnector
     private lateinit var repository: AppleMusicRepository
     
-    private lateinit var player: ExoPlayer
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     
-    private var isForegroundService = false
     private val handler = Handler(Looper.getMainLooper())
     
-    private var currentPlaybackPosition = 0L
-    private var updatePositionJob: Runnable = object : Runnable {
-        override fun run() {
-            if (player.isPlaying) {
-                currentPlaybackPosition = player.currentPosition
-            }
-            handler.postDelayed(this, 1000)
-        }
-    }
+    // This should be provided securely, possibly from a server or secure storage
+    private val developerToken = BuildConfig.APPLE_MUSIC_DEVELOPER_TOKEN
 
     override fun onCreate() {
         super.onCreate()
         
         Log.d(TAG, "onCreate: initializing service")
         
+        // Static initializer for native libraries
+        try {
+            // Prevent OOM false alarms
+            System.setProperty("org.bytedeco.javacpp.maxphysicalbytes", "0")
+            System.setProperty("org.bytedeco.javacpp.maxbytes", "0")
+            
+            // Load required native libraries
+            System.loadLibrary("c++_shared")
+            System.loadLibrary("appleMusicSDK")
+            
+            Log.d(TAG, "Successfully loaded native libraries")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load native libraries: ${e.message}", e)
+        }
+        
         // Initialize the repository
         repository = AppleMusicRepository(this)
         
-        // Initialize the ExoPlayer
-        player = ExoPlayer.Builder(this).build()
-        
-        // Configure player listeners
-        player.addListener(PlayerEventListener())
+        // Initialize the MusicKit SDK with developer token
+        repository.initialize(developerToken)
         
         // Create a MediaSession
         mediaSession = MediaSessionCompat(this, TAG).apply {
@@ -84,11 +82,6 @@ class AppleMusicService : MediaBrowserServiceCompat() {
         // Initialize the MediaSessionConnector
         mediaSessionConnector = MediaSessionConnector(mediaSession)
         mediaSessionConnector.setPlaybackPreparer(AppleMusicPlaybackPreparer())
-        mediaSessionConnector.setQueueNavigator(QueueNavigator())
-        mediaSessionConnector.setPlayer(player)
-        
-        // Start position update job
-        handler.postDelayed(updatePositionJob, 1000)
         
         // Observe changes to playback state
         serviceScope.launch {
@@ -101,14 +94,9 @@ class AppleMusicService : MediaBrowserServiceCompat() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy: releasing resources")
-        serviceScope.launch {
-            // Cancel any ongoing playback
-            player.stop()
-            player.release()
-        }
         
-        // Cancel position updates
-        handler.removeCallbacks(updatePositionJob)
+        // Release Apple Music resources
+        repository.release()
         
         // Release MediaSession and cancel ServiceScope
         mediaSession.release()
@@ -209,30 +197,12 @@ class AppleMusicService : MediaBrowserServiceCompat() {
     override fun onCustomAction(action: String, extras: Bundle?, result: Result<Bundle>) {
         when (action) {
             ACTION_LOGIN -> {
-                // Handle login from activities
-                val token = extras?.getString("token")
-                val expiresIn = extras?.getLong("expires_in") ?: 0L
-                
-                if (token != null && expiresIn > 0) {
-                    val appleToken = AppleMusicToken(
-                        accessToken = token,
-                        expiresAt = System.currentTimeMillis() + expiresIn,
-                        refreshToken = extras.getString("refresh_token")
-                    )
-                    
-                    repository.setAuthToken(appleToken)
-                    
-                    val resultBundle = Bundle().apply {
-                        putBoolean("success", true)
-                    }
-                    result.sendResult(resultBundle)
-                } else {
-                    val resultBundle = Bundle().apply {
-                        putBoolean("success", false)
-                        putString("error", "Invalid token data")
-                    }
-                    result.sendResult(resultBundle)
+                // With our new implementation, we need to trigger auth from an Activity
+                val resultBundle = Bundle().apply {
+                    putBoolean("success", false)
+                    putString("message", "Authentication must be initiated from an Activity")
                 }
+                result.sendResult(resultBundle)
             }
             ACTION_LOGOUT -> {
                 repository.clearAuthToken()
@@ -296,6 +266,9 @@ class AppleMusicService : MediaBrowserServiceCompat() {
         return repository.getRootCategories().toMutableList()
     }
     
+    // The remaining media browsing methods remain mostly unchanged since they
+    // primarily work with MediaItem objects and not with the MusicKit SDK directly
+
     /**
      * Get user playlists as media items
      */
@@ -538,7 +511,7 @@ class AppleMusicService : MediaBrowserServiceCompat() {
      * Build a pending intent for the media session activity
      */
     private fun buildSessionActivityPendingIntent(): android.app.PendingIntent? {
-        // In a real app, this should open your player activity
+        // In a real app, this would create an intent to your player activity
         return null
     }
     
@@ -588,46 +561,11 @@ class AppleMusicService : MediaBrowserServiceCompat() {
     }
     
     /**
-     * ExoPlayer event listener
-     */
-    private inner class PlayerEventListener : Player.Listener {
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            when (playbackState) {
-                Player.STATE_BUFFERING -> {
-                    // Handle buffering state
-                }
-                Player.STATE_READY -> {
-                    // Handle ready state
-                    repository.updatePlaybackState(
-                        isPlaying = player.isPlaying,
-                        position = player.currentPosition
-                    )
-                }
-                Player.STATE_ENDED -> {
-                    // Handle playback ended
-                    repository.skipToNext()
-                }
-                Player.STATE_IDLE -> {
-                    // Handle idle state
-                }
-            }
-        }
-
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-            repository.updatePlaybackState(isPlaying = isPlaying)
-        }
-    }
-    
-    /**
-     * Preparer for playback
+     * Preparer for playback - delegates to the native SDK
      */
     private inner class AppleMusicPlaybackPreparer : MediaSessionConnector.PlaybackPreparer {
         override fun onPrepare(playWhenReady: Boolean) {
-            // Just prepare the current media with no specific arguments
-            val current = repository.playbackState.value.currentTrack
-            if (current != null) {
-                prepareMediaForPlaying(current, playWhenReady)
-            }
+            // We don't need to do any preparation with the native SDK
         }
 
         override fun onPrepareFromMediaId(
@@ -635,70 +573,16 @@ class AppleMusicService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            // Find the track in the repository
-            val tracks = extras?.getParcelableArrayList<MediaMetadataCompat>("tracks")
-            val startIndex = extras?.getInt("startIndex") ?: 0
-            
-            if (tracks != null && tracks.isNotEmpty()) {
-                // If we've received a list of tracks (e.g. for an album or playlist)
-                val tracksList = tracks.mapNotNull { metadata ->
-                    // Convert MediaMetadataCompat to our Track model
-                    val id = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
-                    val title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
-                    val artistName = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
-                    val albumName = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM)
-                    
-                    // These values might not be available in the metadata 
-                    val albumId = extras.getString("albumId") ?: ""
-                    val artistId = extras.getString("artistId") ?: ""
-                    
-                    val artworkUri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)?.let {
-                        Uri.parse(it)
-                    }
-                    
-                    val durationMs = metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
-                    
-                    if (id != null && title != null && artistName != null && albumName != null) {
-                        Track(
-                            id = id,
-                            title = title,
-                            albumName = albumName,
-                            artistName = artistName,
-                            albumId = albumId,
-                            artistId = artistId,
-                            artworkUri = artworkUri,
-                            streamUrl = null, // Will be resolved during playback
-                            previewUrl = null,
-                            durationMs = durationMs
-                        )
-                    } else {
-                        null
-                    }
-                }
-                
-                // Set the queue and current track
-                repository.setCurrentQueue(tracksList, startIndex)
-                
-                // Prepare the specified track
-                tracksList.getOrNull(startIndex)?.let { track ->
-                    prepareMediaForPlaying(track, playWhenReady)
-                }
+            // Use the repository to play the track/album/playlist via the native SDK
+            if (mediaId.startsWith("playlist_")) {
+                val playlistId = mediaId.removePrefix("playlist_")
+                repository.playPlaylist(playlistId)
+            } else if (mediaId.startsWith("album_")) {
+                val albumId = mediaId.removePrefix("album_")
+                repository.playAlbum(albumId)
             } else {
-                // Handle single track playback
-                serviceScope.launch {
-                    // Find track by ID - in a real app, you'd query the repository
-                    // For now, just use mock data for demo
-                    val tracks = repository.getMockTracks()
-                    val track = tracks.find { it.id == mediaId }
-                    
-                    if (track != null) {
-                        // Set current queue to just this track
-                        repository.setCurrentQueue(listOf(track))
-                        
-                        // Prepare the track
-                        prepareMediaForPlaying(track, playWhenReady)
-                    }
-                }
+                // Assume it's a track ID
+                repository.playTrack(mediaId)
             }
         }
 
@@ -707,14 +591,13 @@ class AppleMusicService : MediaBrowserServiceCompat() {
             playWhenReady: Boolean,
             extras: Bundle?
         ) {
-            // For voice search, implement this
+            // Search and play the first result
             serviceScope.launch {
                 val searchResults = repository.search(query)
                 val tracks = searchResults.songs?.data ?: emptyList()
                 
                 if (tracks.isNotEmpty()) {
-                    repository.setCurrentQueue(tracks)
-                    prepareMediaForPlaying(tracks[0], playWhenReady)
+                    repository.playTrack(tracks[0].id)
                 }
             }
         }
@@ -729,110 +612,6 @@ class AppleMusicService : MediaBrowserServiceCompat() {
 
         override fun getSupportedPrepareActions(): Long {
             return MediaSessionConnector.PlaybackPreparer.ACTIONS
-        }
-        
-        /**
-         * Prepare a track for playback
-         */
-        private fun prepareMediaForPlaying(track: Track, playWhenReady: Boolean) {
-            // In a real app, you'd resolve the stream URL here
-            val url = track.streamUrl ?: track.previewUrl
-            
-            if (url != null) {
-                val mediaItem = ExoMediaItem.Builder()
-                    .setUri(url)
-                    .build()
-                
-                player.setMediaItem(mediaItem)
-                player.prepare()
-                
-                if (playWhenReady) {
-                    player.play()
-                }
-            }
-        }
-    }
-    
-    /**
-     * Navigator for queue management
-     */
-    private inner class QueueNavigator : MediaSessionConnector.QueueNavigator {
-        override fun onSkipToQueueItem(player: Player, id: Long) {
-            repository.skipToPosition(id.toInt())
-            
-            // Update player with the new current track
-            val currentTrack = repository.playbackState.value.currentTrack
-            if (currentTrack != null) {
-                val url = currentTrack.streamUrl ?: currentTrack.previewUrl
-                if (url != null) {
-                    val mediaItem = ExoMediaItem.Builder()
-                        .setUri(url)
-                        .build()
-                    
-                    player.setMediaItem(mediaItem)
-                    player.prepare()
-                    player.play()
-                }
-            }
-        }
-
-        override fun onSkipToPrevious(player: Player) {
-            repository.skipToPrevious()
-            
-            // Update player with the previous track
-            val currentTrack = repository.playbackState.value.currentTrack
-            if (currentTrack != null) {
-                val url = currentTrack.streamUrl ?: currentTrack.previewUrl
-                if (url != null) {
-                    val mediaItem = ExoMediaItem.Builder()
-                        .setUri(url)
-                        .build()
-                    
-                    player.setMediaItem(mediaItem)
-                    player.prepare()
-                    player.play()
-                }
-            }
-        }
-
-        override fun onSkipToNext(player: Player) {
-            repository.skipToNext()
-            
-            // Update player with the next track
-            val currentTrack = repository.playbackState.value.currentTrack
-            if (currentTrack != null) {
-                val url = currentTrack.streamUrl ?: currentTrack.previewUrl
-                if (url != null) {
-                    val mediaItem = ExoMediaItem.Builder()
-                        .setUri(url)
-                        .build()
-                    
-                    player.setMediaItem(mediaItem)
-                    player.prepare()
-                    player.play()
-                }
-            }
-        }
-
-        override fun getActiveQueueItemId(player: Player): Long {
-            val playbackState = repository.playbackState.value
-            val currentTrack = playbackState.currentTrack
-            
-            return if (currentTrack != null) {
-                playbackState.queue.indexOf(currentTrack).toLong()
-            } else {
-                -1
-            }
-        }
-
-        override fun onCommand(
-            player: Player,
-            command: String,
-            extras: Bundle?,
-            cb: ResultReceiver?
-        ): Boolean {
-            // Handle custom commands
-            return false
         }
     }
     

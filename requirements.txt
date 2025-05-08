@@ -85,10 +85,7 @@ MediaBrowserService and MediaSession integration
 
 Use ExoPlayer (if handling playback natively)
 
-Offline & Connectivity
 Detect poor or no internet connection gracefully
-
-Fallback UI for offline state (e.g., downloaded playlists or warning)
 
 Localization
 Support multiple languages, beginning with English
@@ -101,3 +98,13 @@ Verify licensing for playback from Apple Music—may be restricted to Apple plat
 Clear terms of use and privacy policy
 
 Must not imply official Apple endorsement
+
+
+Todo:
+
+Integrate MusicKit JS in a WebView for authorized playback
+Implement AudioFocusRequest handling
+Complete the OAuth flow with Apple's authentication servers
+Ensure UI components follow automotive UX guidelines for safety and usability
+Add day/night theme support
+Implement comprehensive error handling and network connectivity management

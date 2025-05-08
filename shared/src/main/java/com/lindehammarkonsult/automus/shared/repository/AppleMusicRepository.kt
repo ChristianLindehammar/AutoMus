@@ -3,17 +3,17 @@ package com.lindehammarkonsult.automus.shared.repository
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.lindehammarkonsult.automus.shared.api.AppleMusicApiService
+import com.lindehammarkonsult.automus.shared.auth.AppleMusicAuthManager
+import com.lindehammarkonsult.automus.shared.auth.AppleMusicPlaybackManager
 import com.lindehammarkonsult.automus.shared.model.*
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -21,10 +21,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "AppleMusicRepository"
-private const val TOKEN_PREF_NAME = "apple_music_auth"
-private const val TOKEN_KEY = "access_token"
-private const val TOKEN_EXPIRY_KEY = "expiry_time"
-private const val REFRESH_TOKEN_KEY = "refresh_token"
 
 /**
  * Repository for Apple Music data
@@ -33,15 +29,16 @@ class AppleMusicRepository(private val context: Context) {
     // API Service
     private val apiService: AppleMusicApiService
     
-    // Auth token
-    private var authToken: AppleMusicToken? = null
+    // MusicKit SDK managers
+    private val authManager: AppleMusicAuthManager = AppleMusicAuthManager(context)
+    private lateinit var playbackManager: AppleMusicPlaybackManager
     
-    // Playback state
-    private val _playbackState = MutableStateFlow(PlaybackState())
-    val playbackState: StateFlow<PlaybackState> = _playbackState
+    // Expose playback state from the playback manager
+    val playbackState: StateFlow<PlaybackState>
+        get() = playbackManager.playbackState
 
     init {
-        // Set up OkHttp client
+        // Set up OkHttp client for API requests
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -66,121 +63,33 @@ class AppleMusicRepository(private val context: Context) {
             
         // Create API service
         apiService = retrofit.create(AppleMusicApiService::class.java)
+    }
+    
+    /**
+     * Initialize the MusicKit SDK with developer token
+     */
+    fun initialize(developerToken: String) {
+        // Initialize auth manager with token
+        authManager.initialize(developerToken)
         
-        // Try to load saved token
-        loadAuthToken()
-    }
-    
-    /**
-     * Load the stored authentication token from secure storage
-     */
-    private fun loadAuthToken() {
-        try {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-                
-            val sharedPreferences = EncryptedSharedPreferences.create(
-                context,
-                TOKEN_PREF_NAME,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-            
-            val token = sharedPreferences.getString(TOKEN_KEY, null)
-            val expiryTime = sharedPreferences.getLong(TOKEN_EXPIRY_KEY, 0)
-            val refreshToken = sharedPreferences.getString(REFRESH_TOKEN_KEY, null)
-            
-            if (token != null && expiryTime > System.currentTimeMillis()) {
-                authToken = AppleMusicToken(
-                    accessToken = token,
-                    expiresAt = expiryTime,
-                    refreshToken = refreshToken
-                )
-                Log.d(TAG, "Loaded auth token from storage")
-            } else {
-                Log.d(TAG, "No valid auth token found in storage")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error loading auth token: ${e.message}")
-        }
-    }
-    
-    /**
-     * Save authentication token to secure storage
-     */
-    private fun saveAuthToken(token: AppleMusicToken) {
-        try {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-                
-            val sharedPreferences = EncryptedSharedPreferences.create(
-                context,
-                TOKEN_PREF_NAME,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-            
-            sharedPreferences.edit()
-                .putString(TOKEN_KEY, token.accessToken)
-                .putLong(TOKEN_EXPIRY_KEY, token.expiresAt)
-                .putString(REFRESH_TOKEN_KEY, token.refreshToken)
-                .apply()
-            
-            authToken = token
-            Log.d(TAG, "Saved auth token to storage")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving auth token: ${e.message}")
-        }
+        // Initialize the playback manager with the token provider
+        playbackManager = AppleMusicPlaybackManager(context, authManager.tokenProvider)
+        
+        Log.d(TAG, "Initialized Apple Music repository with developer token")
     }
     
     /**
      * Check if the user is authenticated
      */
     fun isAuthenticated(): Boolean {
-        return authToken != null && authToken!!.expiresAt > System.currentTimeMillis()
+        return authManager.isAuthenticated()
     }
     
     /**
-     * Set a new authentication token
+     * Start authentication process (should be called from Activity)
      */
-    fun setAuthToken(token: AppleMusicToken) {
-        saveAuthToken(token)
-    }
-    
-    /**
-     * Clear the authentication token (logout)
-     */
-    fun clearAuthToken() {
-        try {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-                
-            val sharedPreferences = EncryptedSharedPreferences.create(
-                context,
-                TOKEN_PREF_NAME,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-            
-            sharedPreferences.edit().clear().apply()
-            authToken = null
-            Log.d(TAG, "Cleared auth token")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error clearing auth token: ${e.message}")
-        }
-    }
-    
-    /**
-     * Get the authentication header string
-     */
-    private fun getAuthHeader(): String {
-        return "Bearer ${authToken?.accessToken ?: ""}"
+    fun authenticate(activity: android.app.Activity) {
+        authManager.authenticate(activity)
     }
     
     /**
@@ -201,13 +110,36 @@ class AppleMusicRepository(private val context: Context) {
     }
     
     /**
+     * Set authentication token from service (compatibility method)
+     */
+    fun setAuthToken(token: AppleMusicToken) {
+        // This method remains for backward compatibility with AppleMusicService
+        authManager.tokenProvider.setUserToken(token.accessToken)
+    }
+    
+    /**
+     * Clear authentication token (logout)
+     */
+    fun clearAuthToken() {
+        authManager.logout()
+    }
+    
+    /**
+     * Get the auth header for API calls
+     */
+    private fun getAuthHeader(): String {
+        return "Bearer ${authManager.tokenProvider.getDeveloperToken()}"
+    }
+    
+    /**
      * Get user playlists
      */
     suspend fun getUserPlaylists(): List<Playlist> = withContext(Dispatchers.IO) {
         if (!isAuthenticated()) return@withContext emptyList<Playlist>()
         
         try {
-            val response = apiService.getUserPlaylists(getAuthHeader())
+            // Use the user's authentication token automatically managed by the SDK
+            val response = apiService.getUserPlaylists("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.data
             }
@@ -225,7 +157,7 @@ class AppleMusicRepository(private val context: Context) {
         if (!isAuthenticated()) return@withContext emptyList<Track>()
         
         try {
-            val response = apiService.getLikedSongs(getAuthHeader())
+            val response = apiService.getLikedSongs("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.data
             }
@@ -243,7 +175,7 @@ class AppleMusicRepository(private val context: Context) {
         if (!isAuthenticated()) return@withContext emptyList<Track>()
         
         try {
-            val response = apiService.getRecentlyPlayed(getAuthHeader())
+            val response = apiService.getRecentlyPlayed("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.data
             }
@@ -254,6 +186,115 @@ class AppleMusicRepository(private val context: Context) {
         return@withContext emptyList<Track>()
     }
     
+    // Playback control methods that delegate to native SDK
+    
+    /**
+     * Play a track by ID
+     */
+    fun playTrack(trackId: String) {
+        playbackManager.playTrack(trackId)
+    }
+    
+    /**
+     * Play an album by ID
+     */
+    fun playAlbum(albumId: String) {
+        playbackManager.playAlbum(albumId)
+    }
+    
+    /**
+     * Play a playlist by ID
+     */
+    fun playPlaylist(playlistId: String) {
+        playbackManager.playPlaylist(playlistId)
+    }
+    
+    /**
+     * Toggle play/pause
+     */
+    fun togglePlayPause() {
+        playbackManager.togglePlayPause()
+    }
+    
+    /**
+     * Skip to next track
+     */
+    fun skipToNext() {
+        playbackManager.skipToNext()
+    }
+    
+    /**
+     * Skip to previous track
+     */
+    fun skipToPrevious() {
+        playbackManager.skipToPrevious()
+    }
+    
+    /**
+     * Set repeat mode
+     * @param mode 0: off, 1: repeat one, 2: repeat all
+     */
+    fun setRepeatMode(mode: Int) {
+        playbackManager.setRepeatMode(mode)
+    }
+    
+    /**
+     * Set shuffle mode
+     */
+    fun setShuffleMode(shuffleEnabled: Boolean) {
+        playbackManager.setShuffleMode(shuffleEnabled)
+    }
+    
+    /**
+     * Set current track and queue (compatible with old implementation)
+     */
+    fun setCurrentQueue(tracks: List<Track>, startPosition: Int = 0) {
+        if (tracks.isEmpty()) return
+        
+        val track = tracks[startPosition]
+        playTrack(track.id)
+    }
+    
+    /**
+     * Update playback state (compatible with old implementation)
+     */
+    fun updatePlaybackState(
+        isPlaying: Boolean? = null,
+        position: Long? = null,
+        shuffleMode: Boolean? = null,
+        repeatMode: Int? = null
+    ) {
+        // These operations are now handled by the SDK
+        if (isPlaying != null) {
+            if (isPlaying) {
+                playbackManager.togglePlayPause()
+            } else {
+                playbackManager.togglePlayPause()
+            }
+        }
+        
+        if (position != null) {
+            playbackManager.seekTo(position)
+        }
+        
+        if (shuffleMode != null) {
+            playbackManager.setShuffleMode(shuffleMode)
+        }
+        
+        if (repeatMode != null) {
+            playbackManager.setRepeatMode(repeatMode)
+        }
+    }
+    
+    /**
+     * Skip to a specific position in the queue
+     */
+    fun skipToPosition(position: Int) {
+        // This functionality is now handled internally by the SDK
+    }
+    
+    // Continue with existing API methods
+    
     /**
      * Get featured playlists
      */
@@ -261,7 +302,7 @@ class AppleMusicRepository(private val context: Context) {
         if (!isAuthenticated()) return@withContext emptyList<Playlist>()
         
         try {
-            val response = apiService.getFeaturedPlaylists(getAuthHeader())
+            val response = apiService.getFeaturedPlaylists("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.data
             }
@@ -279,7 +320,7 @@ class AppleMusicRepository(private val context: Context) {
         if (!isAuthenticated()) return@withContext emptyList<Track>()
         
         try {
-            val response = apiService.getPlaylistTracks(getAuthHeader(), playlistId)
+            val response = apiService.getPlaylistTracks("Bearer ${authManager.tokenProvider.getMusicUserToken()}", playlistId)
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.data
             }
@@ -297,7 +338,7 @@ class AppleMusicRepository(private val context: Context) {
         if (!isAuthenticated()) return@withContext emptyList<Track>()
         
         try {
-            val response = apiService.getAlbumTracks(getAuthHeader(), albumId = albumId)
+            val response = apiService.getAlbumTracks("Bearer ${authManager.tokenProvider.getMusicUserToken()}", albumId = albumId)
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.data
             }
@@ -317,7 +358,7 @@ class AppleMusicRepository(private val context: Context) {
         }
         
         try {
-            val response = apiService.search(getAuthHeader(), query = query)
+            val response = apiService.search("Bearer ${authManager.tokenProvider.getMusicUserToken()}", query = query)
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.results
             }
@@ -335,7 +376,7 @@ class AppleMusicRepository(private val context: Context) {
         if (!isAuthenticated()) return@withContext emptyList<Genre>()
         
         try {
-            val response = apiService.getGenres(getAuthHeader())
+            val response = apiService.getGenres("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
             if (response.isSuccessful && response.body() != null) {
                 return@withContext response.body()!!.data
             }
@@ -346,97 +387,10 @@ class AppleMusicRepository(private val context: Context) {
         return@withContext emptyList<Genre>()
     }
     
-    /**
-     * Set current track and queue
-     */
-    fun setCurrentQueue(tracks: List<Track>, startPosition: Int = 0) {
-        val currentTrack = if (tracks.isNotEmpty() && startPosition < tracks.size) {
-            tracks[startPosition]
-        } else {
-            null
-        }
-        
-        _playbackState.value = _playbackState.value.copy(
-            currentTrack = currentTrack,
-            queue = tracks,
-            position = 0
-        )
-    }
-    
-    /**
-     * Update playback state
-     */
-    fun updatePlaybackState(
-        isPlaying: Boolean? = null,
-        position: Long? = null,
-        shuffleMode: Boolean? = null,
-        repeatMode: Int? = null
-    ) {
-        val current = _playbackState.value
-        _playbackState.value = current.copy(
-            isPlaying = isPlaying ?: current.isPlaying,
-            position = position ?: current.position,
-            shuffleMode = shuffleMode ?: current.shuffleMode,
-            repeatMode = repeatMode ?: current.repeatMode
-        )
-    }
-    
-    /**
-     * Skip to the next track in the queue
-     */
-    fun skipToNext() {
-        val current = _playbackState.value
-        val queue = current.queue
-        
-        if (queue.isEmpty() || current.currentTrack == null) return
-        
-        val currentIndex = queue.indexOf(current.currentTrack)
-        if (currentIndex < 0) return
-        
-        val nextIndex = if (currentIndex >= queue.size - 1) 0 else currentIndex + 1
-        _playbackState.value = current.copy(
-            currentTrack = queue[nextIndex],
-            position = 0
-        )
-    }
-    
-    /**
-     * Skip to the previous track in the queue
-     */
-    fun skipToPrevious() {
-        val current = _playbackState.value
-        val queue = current.queue
-        
-        if (queue.isEmpty() || current.currentTrack == null) return
-        
-        val currentIndex = queue.indexOf(current.currentTrack)
-        if (currentIndex < 0) return
-        
-        val previousIndex = if (currentIndex <= 0) queue.size - 1 else currentIndex - 1
-        _playbackState.value = current.copy(
-            currentTrack = queue[previousIndex],
-            position = 0
-        )
-    }
-    
-    /**
-     * Skip to a specific position in the queue
-     */
-    fun skipToPosition(position: Int) {
-        val current = _playbackState.value
-        val queue = current.queue
-        
-        if (queue.isEmpty() || position < 0 || position >= queue.size) return
-        
-        _playbackState.value = current.copy(
-            currentTrack = queue[position],
-            position = 0
-        )
-    }
-    
-    // Mock data for development and testing
+    // Mock data for development and testing - still useful when not authenticated
     //region Mock Data Methods
     fun getMockPlaylists(): List<Playlist> {
+        // ... existing mock data ...
         return listOf(
             Playlist(
                 id = "playlist-001",
@@ -466,6 +420,7 @@ class AppleMusicRepository(private val context: Context) {
     }
     
     fun getMockTracks(): List<Track> {
+        // ... existing mock data ...
         return listOf(
             Track(
                 id = "song-001",
@@ -509,4 +464,13 @@ class AppleMusicRepository(private val context: Context) {
         )
     }
     //endregion
+    
+    /**
+     * Release resources when no longer needed
+     */
+    fun release() {
+        if (::playbackManager.isInitialized) {
+            playbackManager.release()
+        }
+    }
 }

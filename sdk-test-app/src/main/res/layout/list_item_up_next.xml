@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="84dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/list_item_media_icon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center_vertical"
+        android:background="#FFD9D9D9"/>
+
+    <androidx.legacy.widget.Space
+        android:layout_width="16dp"
+        android:layout_height="match_parent"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingTop="12dp">
+
+        <TextView
+            android:id="@+id/list_item_media_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            style="@style/MediaListItemTitle"/>
+
+        <TextView
+            android:id="@+id/list_item_media_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            style="@style/MediaListItemSubtitle"/>
+
+        <TextView
+            android:id="@+id/list_item_media_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/MediaListItemDescription"/>
+
+    </LinearLayout>
+
+</LinearLayout>

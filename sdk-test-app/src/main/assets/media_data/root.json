@@ -1,0 +1,10 @@
+[
+  {
+    "id" : "subscription_content",
+    "title" : "Subscription Content",
+    "subtitle" : "Subscription content for testing",
+    "description" : "",
+    "browseable" : true,
+    "playable" : false
+  }
+]

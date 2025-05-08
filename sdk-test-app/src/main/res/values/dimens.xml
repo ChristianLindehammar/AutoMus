@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Note: 320dp is the max bitmap size for media session -->
+    <dimen name="notification_artwork_width">280dp</dimen>
+    <dimen name="notification_artwork_height">280dp</dimen>
+</resources>

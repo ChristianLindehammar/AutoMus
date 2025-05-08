@@ -1,0 +1,66 @@
+apply plugin: 'com.android.application'
+
+buildscript {
+    repositories {
+        jcenter()
+        google()
+        maven {
+            url "https://maven.google.com"
+        }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.1'
+    }
+}
+
+repositories {
+    jcenter()
+    google()
+    maven {
+        url 'https://maven.google.com'
+    }
+    flatDir {
+        dirs 'src/main/libs'
+    }
+}
+android {
+    buildToolsVersion '28.0.3'
+    compileSdkVersion 28
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        applicationId 'com.apple.android.music.sdk.testapp'
+        versionCode 1
+        versionName '1.0'
+        minSdkVersion 21
+        targetSdkVersion 28
+    }
+
+    dexOptions {
+        preDexLibraries true
+        maxProcessCount 8
+    }
+
+    flavorDimensions "main"
+
+    productFlavors {
+        sdk {
+        }
+    }
+
+}
+
+dependencies {
+    annotationProcessor 'androidx.annotation:annotation:1.1.0'
+    implementation 'androidx.media:media:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0-alpha07'
+    implementation 'com.squareup.picasso:picasso:2.5.2'
+
+    implementation (name: 'mediaplayback-release-1.1.1', ext: 'aar')
+    implementation (name: 'musickitauth-release-1.1.2', ext: 'aar')
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/media_item_popup_play"
+        android:title="@string/menu_item_play"/>
+
+    <item
+        android:id="@+id/media_item_popup_shuffle"
+        android:title="@string/menu_item_shuffle"/>
+
+    <item
+        android:id="@+id/media_item_popup_play_next"
+        android:title="@string/menu_item_play_next"/>
+
+    <item
+        android:id="@+id/media_item_popup_play_later"
+        android:title="@string/menu_item_play_later"/>
+
+</menu>

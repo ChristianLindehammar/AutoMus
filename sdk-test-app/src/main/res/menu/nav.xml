@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/navitem_browse"
+        android:enabled="true"
+        android:title="@string/title_browse"
+        android:icon="@drawable/ic_nav_browse"/>
+
+    <item android:id="@+id/navitem_now_playing"
+          android:enabled="true"
+          android:title="@string/title_now_playing"
+          android:icon="@drawable/ic_nav_now_playing"/>
+
+    <item android:id="@+id/navitem_up_next"
+          android:enabled="true"
+          android:title="@string/title_up_next"
+          android:icon="@drawable/ic_nav_up_next"/>
+
+    <item android:id="@+id/navitem_settings"
+          android:enabled="true"
+          android:title="@string/title_settings"
+          android:icon="@drawable/ic_nav_settings"/>
+
+</menu>

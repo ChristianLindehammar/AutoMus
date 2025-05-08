@@ -12,6 +12,10 @@ android {
         targetSdkVersion 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Add BuildConfig field for Apple Music developer token
+        // Replace this with your actual developer token from Apple Developer account
+        buildConfigField "String", "APPLE_MUSIC_DEVELOPER_TOKEN", "\"YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE\""
     }
     
     kotlinOptions {
@@ -20,6 +24,14 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true  // Enable BuildConfig generation
+    }
+    
+    // Add this repository for the MusicKit SDK
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
     }
 }
 
@@ -52,6 +64,10 @@ dependencies {
     
     // Security for token handling
     implementation libs.security.crypto
+    
+    // MusicKit SDK for Android - direct file references
+    implementation files('libs/musickitauth-release-1.1.2.aar')
+    implementation files('libs/mediaplayback-release-1.1.1.aar')
     
     // Testing
     testImplementation libs.junit
