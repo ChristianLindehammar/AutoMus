@@ -69,13 +69,26 @@ class AppleMusicRepository(private val context: Context) {
      * Initialize the MusicKit SDK with developer token
      */
     fun initialize(developerToken: String) {
-        // Initialize auth manager with token
-        authManager.initialize(developerToken)
+        // Check if token is a placeholder or empty
+        if (developerToken == "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE" || developerToken.isBlank()) {
+            Log.w(TAG, "Developer token is missing or using placeholder. Running in limited mode.")
+            // We'll still initialize with the placeholder, but auth will fail
+            // This allows the app to start without crashing
+        } else {
+            Log.d(TAG, "Initializing Apple Music repository with developer token")
+        }
         
-        // Initialize the playback manager with the token provider
-        playbackManager = AppleMusicPlaybackManager(context, authManager.tokenProvider)
-        
-        Log.d(TAG, "Initialized Apple Music repository with developer token")
+        try {
+            // Initialize auth manager with token
+            authManager.initialize(developerToken)
+            
+            // Initialize the playback manager with the token provider
+            playbackManager = AppleMusicPlaybackManager(context, authManager.tokenProvider)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing Apple Music components: ${e.message}", e)
+            // Create a default playback manager to avoid null references
+            playbackManager = AppleMusicPlaybackManager(context, authManager.tokenProvider)
+        }
     }
     
     /**

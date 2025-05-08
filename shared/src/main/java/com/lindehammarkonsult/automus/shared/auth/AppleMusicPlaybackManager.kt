@@ -40,6 +40,9 @@ class AppleMusicPlaybackManager(
     private val _playbackState = MutableStateFlow(AppPlaybackState())
     val playbackState: StateFlow<AppPlaybackState> = _playbackState
     
+    // Flag to track if we're running with valid authentication
+    private var hasValidAuthentication = false
+    
     // Native libraries required by the SDK
     companion object {
         init {
@@ -64,25 +67,44 @@ class AppleMusicPlaybackManager(
         handlerThread.start()
         handler = Handler(handlerThread.looper)
         
+        // Check if we have valid tokens
+        val devToken = tokenProvider.getDeveloperToken()
+        hasValidAuthentication = devToken != null && 
+            devToken != "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE" && 
+            devToken.isNotBlank()
+        
         // Create the player controller using the factory
-        playerController = MediaPlayerControllerFactory.createLocalController(
-            context,
-            handler,
-            tokenProvider
-        )
-        
-        // Register this class as a listener
-        playerController.addListener(this)
-        
-        Log.d(TAG, "Initialized AppleMusicPlaybackManager")
+        playerController = try {
+            MediaPlayerControllerFactory.createLocalController(
+                context,
+                handler,
+                tokenProvider
+            ).also {
+                // Register this class as a listener
+                it.addListener(this)
+                Log.d(TAG, "Initialized AppleMusicPlaybackManager with valid token")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating MediaPlayerController: ${e.message}")
+            // Create a dummy controller for safety - in a real app, you might handle this differently
+            // Here we're just making sure the app doesn't crash
+            MediaPlayerControllerFactory.createLocalController(
+                context,
+                handler,
+                EmergencyTokenProvider()
+            ).also {
+                hasValidAuthentication = false
+                Log.w(TAG, "Created fallback MediaPlayerController due to initialization error")
+            }
+        }
     }
     
     /**
      * Play a track by ID
      */
     fun playTrack(trackId: String) {
-        if (tokenProvider.getMusicUserToken() == null) {
-            Log.e(TAG, "Cannot play track: User not authenticated")
+        if (!hasValidAuthentication || tokenProvider.getMusicUserToken() == null) {
+            Log.e(TAG, "Cannot play track: User not authenticated or missing valid token")
             return
         }
         
@@ -94,6 +116,13 @@ class AppleMusicPlaybackManager(
         } catch (e: Exception) {
             Log.e(TAG, "Error playing track: ${e.message}")
         }
+    }
+    
+    // Simple emergency token provider that returns empty tokens to prevent crashes
+    private inner class EmergencyTokenProvider : com.apple.android.sdk.authentication.TokenProvider {
+        override fun getDeveloperToken(): String = ""
+        
+        override fun getMusicUserToken(): String? = null
     }
     
     /**

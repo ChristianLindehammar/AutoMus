@@ -94,12 +94,12 @@ class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
 
     override fun getDeveloperToken(callback: TokenProvider.TokenProviderCallback?) {
         val token = getDeveloperToken()
-        if (token != null) {
+        if (token != null && token != "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE" && token.isNotBlank()) {
             callback?.onSuccess(token)
             Log.d(TAG, "Developer token provided to MusicKit")
         } else {
-            callback?.onError("Developer token not available")
-            Log.e(TAG, "Developer token requested but not available")
+            callback?.onError("Developer token not available or using placeholder")
+            Log.e(TAG, "Developer token requested but not available or using placeholder")
         }
     }
 
