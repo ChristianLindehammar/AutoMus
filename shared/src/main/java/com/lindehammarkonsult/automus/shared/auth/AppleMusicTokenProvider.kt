@@ -1,88 +1,116 @@
 package com.lindehammarkonsult.automus.shared.auth
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import android.util.Base64
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.apple.android.music.MusicKit
 import com.apple.android.music.TokenProvider
+import java.io.IOException
+import java.security.GeneralSecurityException
 
 private const val TAG = "AppleMusicTokenProvider"
-private const val PREF_FILE_NAME = "apple_music_tokens"
+private const val PREFS_NAME = "apple_music_auth_prefs"
 private const val KEY_DEVELOPER_TOKEN = "developer_token"
 private const val KEY_USER_TOKEN = "user_token"
 
 /**
- * Implementation of Apple Music TokenProvider interface for managing authentication tokens
- * This class securely stores and provides the tokens needed by the MusicKit SDK
+ * TokenProvider implementation for Apple Music that securely stores tokens
+ * using EncryptedSharedPreferences and provides them to the MusicKit
  */
-class AppleMusicTokenProvider(context: Context) : TokenProvider {
+class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
 
-    // Use encrypted shared preferences for secure token storage
-    private val encryptedPrefs by lazy {
-        val masterKey = MasterKey.Builder(context)
+    private val encryptedPrefs: SharedPreferences
+
+    init {
+        val masterKeyAlias = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
-            
-        EncryptedSharedPreferences.create(
-            context,
-            PREF_FILE_NAME,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+
+        encryptedPrefs = try {
+            EncryptedSharedPreferences.create(
+                context,
+                PREFS_NAME,
+                masterKeyAlias,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: GeneralSecurityException) {
+            Log.e(TAG, "Error creating encrypted shared preferences: ${e.message}", e)
+            // Fallback to regular shared preferences if encryption fails
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        } catch (e: IOException) {
+            Log.e(TAG, "I/O error creating encrypted shared preferences: ${e.message}", e)
+            // Fallback to regular shared preferences if encryption fails
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        }
     }
-    
+
     /**
-     * Set the developer token provided by Apple
+     * Store the developer token (should be called during app initialization)
      */
-    fun setDeveloperToken(token: String) {
-        encryptedPrefs.edit().putString(KEY_DEVELOPER_TOKEN, token).apply()
-        Log.d(TAG, "Developer token saved")
+    fun setDeveloperToken(token: String?) {
+        if (token != null) {
+            encryptedPrefs.edit().putString(KEY_DEVELOPER_TOKEN, token).apply()
+            Log.d(TAG, "Developer token stored")
+        } else {
+            encryptedPrefs.edit().remove(KEY_DEVELOPER_TOKEN).apply()
+            Log.d(TAG, "Developer token removed")
+        }
     }
-    
+
     /**
-     * Set the user token received after successful authentication
+     * Store the user token (called after successful authentication)
      */
     fun setUserToken(token: String?) {
         if (token != null) {
             encryptedPrefs.edit().putString(KEY_USER_TOKEN, token).apply()
-            Log.d(TAG, "User token saved")
+            Log.d(TAG, "User token stored")
         } else {
             encryptedPrefs.edit().remove(KEY_USER_TOKEN).apply()
             Log.d(TAG, "User token removed")
         }
     }
-    
+
     /**
-     * Clear all saved tokens
+     * Get the securely stored developer token
      */
-    fun clearTokens() {
-        encryptedPrefs.edit()
-            .remove(KEY_USER_TOKEN)
-            .apply()
-        Log.d(TAG, "Tokens cleared")
-    }
-    
-    //
-    // TokenProvider interface implementation
-    //
-    
-    override fun getDeveloperToken(): String? {
+    fun getDeveloperToken(): String? {
         return encryptedPrefs.getString(KEY_DEVELOPER_TOKEN, null)
     }
 
-    override fun getMusicUserToken(): String? {
+    /**
+     * Get the securely stored user token
+     */
+    fun getMusicUserToken(): String? {
         return encryptedPrefs.getString(KEY_USER_TOKEN, null)
     }
 
-    override fun getUsersStoreFrontCountryCode(): String? {
-        // This could be fetched from user preferences or API
-        // For now we'll return null to let the SDK determine it
-        return null
+    // TokenProvider interface implementation
+
+    override fun getDeveloperToken(callback: TokenProvider.TokenProviderCallback?) {
+        val token = getDeveloperToken()
+        if (token != null) {
+            callback?.onSuccess(token)
+            Log.d(TAG, "Developer token provided to MusicKit")
+        } else {
+            callback?.onError("Developer token not available")
+            Log.e(TAG, "Developer token requested but not available")
+        }
     }
 
-    override fun getUsersStoreFrontIdentifier(): String? {
-        // Similarly, return null to let the SDK determine it
-        return null
+    override fun getMusicUserToken(callback: TokenProvider.TokenProviderCallback?) {
+        val token = getMusicUserToken()
+        if (token != null) {
+            callback?.onSuccess(token)
+            Log.d(TAG, "User token provided to MusicKit")
+        } else {
+            callback?.onError("User token not available")
+            Log.e(TAG, "User token requested but not available")
+        }
     }
 }
