@@ -83,19 +83,6 @@
         app:layout_constraintTop_toBottomOf="@+id/artist_text"
         tools:text="Album Name" />
 
-    <ImageView
-        android:id="@+id/download_status"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginEnd="8dp"
-        android:contentDescription="Downloaded for offline playback"
-        android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@+id/album_text"
-        app:layout_constraintTop_toTopOf="@+id/album_text"
-        app:layout_constraintBottom_toBottomOf="@+id/album_text"
-        app:srcCompat="@drawable/ic_downloaded"
-        tools:visibility="visible" />
-
     <SeekBar
         android:id="@+id/seek_bar"
         android:layout_width="0dp"
