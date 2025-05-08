@@ -41,7 +41,7 @@ sealed class MusicItem {
     fun toMediaItem(): MediaBrowserCompat.MediaItem {
         val extras = Bundle().apply {
             putString("ITEM_TYPE", this@MusicItem.javaClass.simpleName)
-            if (this@MusicItem is Track) {
+            if (this@MusicItem is AppleMusicTrack) {
                 putString("MEDIA_ID", id)
                 putString("ALBUM_ID", albumId)
                 putString("ARTIST_ID", artistId)
@@ -80,7 +80,7 @@ sealed class MusicItem {
             builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, it.toString())
         }
         
-        if (this is Track) {
+        if (this is AppleMusicTrack) {
             builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artistName)
             builder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, albumName)
             builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs)
@@ -93,7 +93,7 @@ sealed class MusicItem {
 /**
  * Represents a music track
  */
-data class Track(
+data class AppleMusicTrack(
     override val id: String,
     override val title: String,
     val albumName: String,
@@ -175,9 +175,9 @@ data class Genre(
 /**
  * Represents the state of the player and current queue
  */
-data class PlaybackState(
-    val currentTrack: Track? = null,
-    val queue: List<Track> = emptyList(),
+data class AppleMusicPlaybackState(
+    val currentTrack: AppleMusicTrack? = null,
+    val queue: List<AppleMusicTrack> = emptyList(),
     val isPlaying: Boolean = false,
     val position: Long = 0,
     val shuffleMode: Boolean = false,

@@ -47,8 +47,8 @@ dependencies {
     implementation(project(":shared"))
     
     // Automotive
-    implementation(libs.car)
-    implementation(libs.car.cluster)
+    implementation("androidx.car.app:app:1.2.0")
+    implementation("androidx.car.app:app-automotive:1.2.0")
     
     // UI
     implementation(libs.material)
