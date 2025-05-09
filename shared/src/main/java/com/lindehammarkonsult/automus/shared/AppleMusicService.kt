@@ -41,8 +41,10 @@ class AppleMusicService : MediaBrowserServiceCompat() {
     
     private val handler = Handler(Looper.getMainLooper())
     
-    // This should be provided securely, possibly from a server or secure storage
+    // Authentication properties from BuildConfig
     private val developerToken = BuildConfig.APPLE_MUSIC_DEVELOPER_TOKEN
+    private val clientId = BuildConfig.APPLE_MUSIC_CLIENT_ID
+    private val clientSecret = BuildConfig.APPLE_MUSIC_CLIENT_SECRET
 
     override fun onCreate() {
         super.onCreate()
@@ -64,11 +66,11 @@ class AppleMusicService : MediaBrowserServiceCompat() {
             Log.e(TAG, "Failed to load native libraries: ${e.message}", e)
         }
         
-        // Initialize the repository
-        repository = AppleMusicRepository(this)
+        // Initialize the repository with auth parameters
+        repository = AppleMusicRepository(this, developerToken, clientId, clientSecret)
         
-        // Initialize the MusicKit SDK with developer token
-        repository.initialize(developerToken)
+        // Initialize the MusicKit SDK (no need to pass developerToken now)
+        repository.initialize()
         
         // Create a MediaSession
         mediaSession = MediaSessionCompat(this, TAG).apply {

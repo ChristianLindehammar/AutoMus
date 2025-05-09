@@ -27,7 +27,7 @@
             android:name=".ui.AppleMusicAuthActivity"
             android:exported="false"
             android:label="@string/apple_music_auth_title"
-            android:theme="@style/Theme.MaterialComponents.DayNight" />
+            android:theme="@style/Theme.AppCompat" />
 
     </application>
 

@@ -2,47 +2,119 @@ package com.lindehammarkonsult.automus.shared.auth
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import android.util.Base64
 import android.util.Log
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.apple.android.sdk.authentication.TokenProvider
-import java.io.IOException
-import java.security.GeneralSecurityException
+import java.nio.charset.StandardCharsets
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 
 private const val TAG = "AppleMusicTokenProvider"
 private const val PREFS_NAME = "apple_music_auth_prefs"
 private const val KEY_DEVELOPER_TOKEN = "developer_token"
 private const val KEY_USER_TOKEN = "user_token"
+private const val KEY_ALIAS = "apple_music_key"
+private const val ANDROID_KEYSTORE = "AndroidKeyStore"
+private const val GCM_IV_LENGTH = 12
+private const val GCM_TAG_LENGTH = 128
 
 /**
  * TokenProvider implementation for Apple Music that securely stores tokens
- * using EncryptedSharedPreferences and provides them to the MusicKit
+ * using SharedPreferences with manual encryption via AndroidKeyStore
  */
 class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
 
-    private val encryptedPrefs: SharedPreferences
-
-    init {
-        val masterKeyAlias = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-
-        encryptedPrefs = try {
-            EncryptedSharedPreferences.create(
-                context,
-                PREFS_NAME,
-                masterKeyAlias,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    
+    /**
+     * Creates or retrieves the encryption key from the Android KeyStore
+     */
+    private fun getOrCreateSecretKey(): SecretKey? {
+        try {
+            // Check if the key already exists
+            val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
+            keyStore.load(null)
+            
+            if (keyStore.containsAlias(KEY_ALIAS)) {
+                return (keyStore.getEntry(KEY_ALIAS, null) as KeyStore.SecretKeyEntry).secretKey
+            }
+            
+            // Generate a new key if it doesn't exist
+            val keyGenerator = KeyGenerator.getInstance(
+                KeyProperties.KEY_ALGORITHM_AES, 
+                ANDROID_KEYSTORE
             )
-        } catch (e: GeneralSecurityException) {
-            Log.e(TAG, "Error creating encrypted shared preferences: ${e.message}", e)
-            // Fallback to regular shared preferences if encryption fails
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        } catch (e: IOException) {
-            Log.e(TAG, "I/O error creating encrypted shared preferences: ${e.message}", e)
-            // Fallback to regular shared preferences if encryption fails
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            
+            val keyGenParameterSpec = KeyGenParameterSpec.Builder(
+                KEY_ALIAS,
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+            )
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .setKeySize(256)
+                .build()
+                
+            keyGenerator.init(keyGenParameterSpec)
+            return keyGenerator.generateKey()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating/retrieving key: ${e.message}", e)
+            return null
+        }
+    }
+    
+    /**
+     * Encrypt data using the AndroidKeyStore key
+     */
+    private fun encrypt(plaintext: String): String? {
+        try {
+            val secretKey = getOrCreateSecretKey() ?: return null
+            
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+            
+            val iv = cipher.iv
+            val encryptedBytes = cipher.doFinal(plaintext.toByteArray(StandardCharsets.UTF_8))
+            
+            // Combine IV and encrypted data
+            val combined = ByteArray(iv.size + encryptedBytes.size)
+            System.arraycopy(iv, 0, combined, 0, iv.size)
+            System.arraycopy(encryptedBytes, 0, combined, iv.size, encryptedBytes.size)
+            
+            return Base64.encodeToString(combined, Base64.DEFAULT)
+        } catch (e: Exception) {
+            Log.e(TAG, "Encryption error: ${e.message}", e)
+            return null
+        }
+    }
+    
+    /**
+     * Decrypt data using the AndroidKeyStore key
+     */
+    private fun decrypt(encryptedData: String): String? {
+        try {
+            val secretKey = getOrCreateSecretKey() ?: return null
+            
+            val decoded = Base64.decode(encryptedData, Base64.DEFAULT)
+            
+            // Extract IV from the beginning of the data
+            val iv = ByteArray(GCM_IV_LENGTH)
+            val ciphertext = ByteArray(decoded.size - GCM_IV_LENGTH)
+            System.arraycopy(decoded, 0, iv, 0, iv.size)
+            System.arraycopy(decoded, iv.size, ciphertext, 0, ciphertext.size)
+            
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+            
+            val decryptedBytes = cipher.doFinal(ciphertext)
+            return String(decryptedBytes, StandardCharsets.UTF_8)
+        } catch (e: Exception) {
+            Log.e(TAG, "Decryption error: ${e.message}", e)
+            return null
         }
     }
 
@@ -51,10 +123,17 @@ class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
      */
     fun setDeveloperToken(token: String?) {
         if (token != null) {
-            encryptedPrefs.edit().putString(KEY_DEVELOPER_TOKEN, token).apply()
-            Log.d(TAG, "Developer token stored")
+            val encrypted = encrypt(token)
+            if (encrypted != null) {
+                prefs.edit().putString(KEY_DEVELOPER_TOKEN, encrypted).apply()
+                Log.d(TAG, "Developer token stored securely")
+            } else {
+                // Fallback to plaintext if encryption fails
+                prefs.edit().putString(KEY_DEVELOPER_TOKEN, token).apply()
+                Log.w(TAG, "Developer token stored in plaintext (encryption failed)")
+            }
         } else {
-            encryptedPrefs.edit().remove(KEY_DEVELOPER_TOKEN).apply()
+            prefs.edit().remove(KEY_DEVELOPER_TOKEN).apply()
             Log.d(TAG, "Developer token removed")
         }
     }
@@ -64,10 +143,17 @@ class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
      */
     fun setUserToken(token: String?) {
         if (token != null) {
-            encryptedPrefs.edit().putString(KEY_USER_TOKEN, token).apply()
-            Log.d(TAG, "User token stored")
+            val encrypted = encrypt(token)
+            if (encrypted != null) {
+                prefs.edit().putString(KEY_USER_TOKEN, encrypted).apply()
+                Log.d(TAG, "User token stored securely")
+            } else {
+                // Fallback to plaintext if encryption fails
+                prefs.edit().putString(KEY_USER_TOKEN, token).apply()
+                Log.w(TAG, "User token stored in plaintext (encryption failed)")
+            }
         } else {
-            encryptedPrefs.edit().remove(KEY_USER_TOKEN).apply()
+            prefs.edit().remove(KEY_USER_TOKEN).apply()
             Log.d(TAG, "User token removed")
         }
     }
@@ -77,7 +163,10 @@ class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
      * Get the securely stored developer token
      */
     override fun getDeveloperToken(): String {
-        return encryptedPrefs.getString(KEY_DEVELOPER_TOKEN, "") ?: ""
+        val encrypted = prefs.getString(KEY_DEVELOPER_TOKEN, "") ?: ""
+        if (encrypted.isEmpty()) return ""
+        
+        return decrypt(encrypted) ?: encrypted // Fallback to encrypted string if decryption fails
     }
 
     /**
@@ -85,14 +174,16 @@ class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
      * Get the securely stored user token
      */
     override fun getUserToken(): String? {
-        return encryptedPrefs.getString(KEY_USER_TOKEN, null)
+        val encrypted = prefs.getString(KEY_USER_TOKEN, null) ?: return null
+        return decrypt(encrypted) ?: encrypted // Fallback to encrypted string if decryption fails
     }
 
     /**
      * Get nullable developer token - for use in initialization checks
      */
     fun getDeveloperTokenOrNull(): String? {
-        return encryptedPrefs.getString(KEY_DEVELOPER_TOKEN, null)
+        val encrypted = prefs.getString(KEY_DEVELOPER_TOKEN, null) ?: return null
+        return decrypt(encrypted) ?: encrypted // Fallback to encrypted string if decryption fails
     }
 
     /**

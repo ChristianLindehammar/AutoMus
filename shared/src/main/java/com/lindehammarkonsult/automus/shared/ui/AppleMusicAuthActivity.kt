@@ -54,9 +54,13 @@ class AppleMusicAuthActivity : ComponentActivity() {
         statusText = findViewById(R.id.text_status)
         progressBar = findViewById(R.id.progress_bar)
         
-        // Initialize auth manager
-        authManager = AppleMusicAuthManager(this)
-        authManager.initialize(BuildConfig.APPLE_MUSIC_DEVELOPER_TOKEN)
+        // Initialize auth manager with required parameters
+        authManager = AppleMusicAuthManager(
+            context = this,
+            developerToken = BuildConfig.APPLE_MUSIC_DEVELOPER_TOKEN,
+            clientId = BuildConfig.APPLE_MUSIC_CLIENT_ID,
+            clientSecret = BuildConfig.APPLE_MUSIC_CLIENT_SECRET
+        )
         
         // Set up login button
         loginButton.setOnClickListener {

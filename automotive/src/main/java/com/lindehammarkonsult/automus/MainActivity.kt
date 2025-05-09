@@ -26,7 +26,7 @@ private const val SERVICE_PACKAGE_NAME = "com.lindehammarkonsult.automus"
 /**
  * Main activity for the Apple Music Android Automotive application
  */
-class MainActivity : AppCompatActivity(), MediaAwareActivity {
+abstract class MainActivity : AppCompatActivity(), MediaAwareActivity {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MusicViewModel
@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
                         it.state == PlaybackStateCompat.STATE_BUFFERING ||
                         it.state == PlaybackStateCompat.STATE_PAUSED
                 
-                showMiniPlayer(isPlaying)
+                if (isPlaying) showMiniPlayer() else hideMiniPlayer()
                 
                 // Update play/pause button
                 updatePlayPauseButton(it.state == PlaybackStateCompat.STATE_PLAYING)
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             viewModel.setMetadata(metadata)
             
             // Update mini player with new metadata
-            updateMiniPlayer(metadata)
+            updateMiniPlayerWithMetadata(metadata)
         }
     }
 
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     
     private fun setupBottomNavigation() {
         // Default fragment
-        if (supportFragmentManager.findFragmentById(R.id.fragment_container) == null) {
+        if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) == null) {
             loadFragment(LibraryFragment())
         }
         
@@ -158,19 +158,18 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
+            .replace(R.id.fragmentContainer, fragment)
             .commit()
     }
     
     private fun setupMiniPlayerControls() {
         // Click listeners for the mini player
-        binding.nowPlayingMini.root.setOnClickListener {
+        binding.miniPlayer.root.setOnClickListener {
             // Open now playing screen
-            loadFragment(NowPlayingFragment())
-            binding.bottomNavigation.selectedItemId = R.id.nav_now_playing
+            showNowPlaying()
         }
         
-        binding.nowPlayingMini.miniPlayPause.setOnClickListener {
+        binding.miniPlayer.btnPlayPause.setOnClickListener {
             val controller = MediaControllerCompat.getMediaController(this)
             val pbState = controller?.playbackState?.state
             
@@ -188,34 +187,44 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         } else {
             R.drawable.ic_play
         }
-        binding.nowPlayingMini.miniPlayPause.setImageResource(iconResource)
+        binding.miniPlayer.btnPlayPause.setImageResource(iconResource)
     }
     
     // MediaAwareActivity implementation
-    override fun updateMiniPlayer(metadata: MediaMetadataCompat?) {
+    override fun showMiniPlayer() {
+        binding.miniPlayer.root.visibility = View.VISIBLE
+    }
+    
+    override fun hideMiniPlayer() {
+        binding.miniPlayer.root.visibility = View.GONE
+    }
+    
+    override fun showNowPlaying() {
+        loadFragment(NowPlayingFragment())
+        binding.bottomNavigation.selectedItemId = R.id.nav_now_playing
+    }
+    
+    // Additional helper methods for handling media updates
+    fun updateMiniPlayerWithMetadata(metadata: MediaMetadataCompat?) {
         metadata?.let {
             // Update song title and artist
-            binding.nowPlayingMini.miniSongTitle.text = it.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
-            binding.nowPlayingMini.miniArtistName.text = it.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
+            binding.miniPlayer.tvTrackTitle.text = it.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
+            binding.miniPlayer.tvArtist.text = it.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
             
             // Load album art
             val artworkUri = it.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)
             if (artworkUri != null) {
                 Glide.with(this)
                     .load(artworkUri)
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .into(binding.nowPlayingMini.miniAlbumArt)
+                    .placeholder(R.drawable.album_art_placeholder)
+                    .into(binding.miniPlayer.ivAlbumArt)
             } else {
                 // Use default artwork
-                binding.nowPlayingMini.miniAlbumArt.setImageResource(R.drawable.ic_launcher_background)
+                binding.miniPlayer.ivAlbumArt.setImageResource(R.drawable.album_art_placeholder)
             }
             
             // Show mini player since we have active media
-            showMiniPlayer(true)
+            showMiniPlayer()
         }
-    }
-    
-    override fun showMiniPlayer(show: Boolean) {
-        binding.nowPlayingMini.root.visibility = if (show) View.VISIBLE else View.GONE
     }
 }

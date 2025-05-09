@@ -9,7 +9,7 @@ data class PlaybackState(
     val position: Long = 0L,
     val buffering: Boolean = false,
     val error: PlaybackError? = null,
-    val repeatMode: Int = RepeatMode.NONE,
+    val repeatMode: RepeatMode = RepeatMode.NONE,
     val shuffleEnabled: Boolean = false,
     val queue: List<Track> = emptyList(),
     val shuffleMode: Boolean = false  // Added this property

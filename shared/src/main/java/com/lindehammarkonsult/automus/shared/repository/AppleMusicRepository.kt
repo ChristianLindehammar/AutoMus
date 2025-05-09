@@ -1,5 +1,6 @@
 package com.lindehammarkonsult.automus.shared.repository
 
+import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
+import com.lindehammarkonsult.automus.shared.api.SearchResults
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -25,12 +27,22 @@ private const val TAG = "AppleMusicRepository"
 /**
  * Repository for Apple Music data
  */
-class AppleMusicRepository(private val context: Context) {
+class AppleMusicRepository(
+    private val context: Context,
+    private val developerToken: String,
+    private val clientId: String,
+    private val clientSecret: String
+) {
     // API Service
     private val apiService: AppleMusicApiService
     
     // MusicKit SDK managers
-    private val authManager: AppleMusicAuthManager = AppleMusicAuthManager(context)
+    private val authManager: AppleMusicAuthManager = AppleMusicAuthManager(
+        context,
+        developerToken,
+        clientId,
+        clientSecret
+    )
     private lateinit var playbackManager: AppleMusicPlaybackManager
     
     // Expose playback state from the playback manager
@@ -68,7 +80,7 @@ class AppleMusicRepository(private val context: Context) {
     /**
      * Initialize the MusicKit SDK with developer token
      */
-    fun initialize(developerToken: String) {
+    fun initialize() {
         // Check if token is a placeholder or empty
         if (developerToken == "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE" || developerToken.isBlank()) {
             Log.w(TAG, "Developer token is missing or using placeholder. Running in limited mode.")
@@ -79,8 +91,8 @@ class AppleMusicRepository(private val context: Context) {
         }
         
         try {
-            // Initialize auth manager with token
-            authManager.initialize(developerToken)
+            // Initialize auth manager
+            authManager.initialize()
             
             // Initialize the playback manager with the token provider
             playbackManager = AppleMusicPlaybackManager(context, authManager.tokenProvider)
@@ -101,7 +113,7 @@ class AppleMusicRepository(private val context: Context) {
     /**
      * Start authentication process (should be called from Activity)
      */
-    fun authenticate(activity: android.app.Activity) {
+    fun authenticate(activity: Activity) {
         authManager.authenticate(activity)
     }
     
@@ -247,7 +259,7 @@ class AppleMusicRepository(private val context: Context) {
      * Set repeat mode
      * @param mode 0: off, 1: repeat one, 2: repeat all
      */
-    fun setRepeatMode(mode: Int) {
+    fun setRepeatMode(mode: RepeatMode) {
         playbackManager.setRepeatMode(mode)
     }
     
@@ -275,7 +287,7 @@ class AppleMusicRepository(private val context: Context) {
         isPlaying: Boolean? = null,
         position: Long? = null,
         shuffleMode: Boolean? = null,
-        repeatMode: Int? = null
+        repeatMode: RepeatMode? = null
     ) {
         // These operations are now handled by the SDK
         if (isPlaying != null) {
@@ -446,7 +458,8 @@ class AppleMusicRepository(private val context: Context) {
                 streamUrl = null,
                 previewUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/77/17/99/771799f8-acb3-ae06-873c-9d4474eac29d/mzaf_10332520797539877415.plus.aac.p.m4a",
                 durationMs = 200000,
-                isExplicit = false
+                isExplicit = false,
+                subtitle = TODO()
             ),
             Track(
                 id = "song-002",
@@ -459,7 +472,8 @@ class AppleMusicRepository(private val context: Context) {
                 streamUrl = null,
                 previewUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/cb/e5/cd/cbe5cd65-d4fb-c44f-d80b-6712e82855c9/mzaf_18382862308326827799.plus.aac.p.m4a",
                 durationMs = 141000,
-                isExplicit = false
+                isExplicit = false,
+                subtitle = TODO()
             ),
             Track(
                 id = "song-003",
@@ -472,7 +486,8 @@ class AppleMusicRepository(private val context: Context) {
                 streamUrl = null,
                 previewUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/96/7e/ea/967eea9f-839a-ba30-3e36-8d97c0ff412a/mzaf_8991881941319874779.plus.aac.p.m4a",
                 durationMs = 167000,
-                isExplicit = false
+                isExplicit = false,
+                subtitle = TODO()
             )
         )
     }

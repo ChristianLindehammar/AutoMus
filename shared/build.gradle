@@ -16,6 +16,8 @@ android {
         // Add BuildConfig field for Apple Music developer token
         // Replace this with your actual developer token from Apple Developer account
         buildConfigField "String", "APPLE_MUSIC_DEVELOPER_TOKEN", "\"YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE\""
+        buildConfigField "String", "APPLE_MUSIC_CLIENT_ID", "\"YOUR_APPLE_MUSIC_CLIENT_ID_HERE\""
+        buildConfigField "String", "APPLE_MUSIC_CLIENT_SECRET", "\"YOUR_APPLE_MUSIC_CLIENT_SECRET_HERE\""
     }
     
     kotlinOptions {
@@ -25,6 +27,7 @@ android {
     buildFeatures {
         viewBinding true
         buildConfig true  // Enable BuildConfig generation
+        dataBinding true  // Enable data binding for ConstraintLayout
     }
 
     compileOptions {
@@ -38,6 +41,10 @@ dependencies {
     implementation libs.androidx.media
     implementation libs.androidx.core.ktx.v1160
     implementation libs.androidx.appcompat
+    
+    // UI Components
+    implementation libs.androidx.constraintlayout  // Add ConstraintLayout from version catalog
+    implementation "androidx.constraintlayout:constraintlayout:2.1.4"  // Direct dependency as backup
     
     // ExoPlayer for media playback with extensions
     implementation libs.exoplayer.core
@@ -68,10 +75,14 @@ dependencies {
     // Security for token handling
     implementation libs.androidx.security.crypto.v100
     
+    // If you have many .jar files in the libs folder:
+    // implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     // MusicKit SDK for Android - direct file references
-    implementation files('libs/musickitauth-release-1.1.2.aar')
-    implementation files('libs/mediaplayback-release-1.1.1.aar')
-    
+    // If you have many .aar files in the libs folder:
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
+    implementation libs.firebase.crashlytics.buildtools
+
     // Testing
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit

@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(project(":shared"))
+    // Removed security-crypto dependency as it's no longer needed
     // Automotive
     implementation(libs.androidx.app)
     implementation(libs.androidx.app.automotive)
@@ -52,11 +53,18 @@ dependencies {
     // UI
     implementation(libs.material)
     
+    // Image Loading
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
+    
     // Lifecycle
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.runtime)
     implementation(libs.lifecycle.livedata)
-    
+    implementation(libs.androidx.media)
+    implementation(libs.androidx.media)
+    implementation(libs.androidx.media)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

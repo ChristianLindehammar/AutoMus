@@ -12,6 +12,7 @@ import com.apple.android.music.playback.model.PlaybackRepeatMode
 import com.apple.android.music.playback.model.PlaybackShuffleMode
 import com.apple.android.music.playback.model.PlaybackState
 import com.apple.android.music.playback.model.PlayerQueueItem
+import com.lindehammarkonsult.automus.shared.model.RepeatMode
 import com.lindehammarkonsult.automus.shared.model.PlaybackState as AppPlaybackState
 import com.lindehammarkonsult.automus.shared.model.Track
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -234,12 +235,12 @@ class AppleMusicPlaybackManager(
      * Set repeat mode
      * @param mode 0: off, 1: repeat one, 2: repeat all
      */
-    fun setRepeatMode(mode: Int) {
+    fun setRepeatMode(mode: RepeatMode) {
         try {
             when (mode) {
-                0 -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_OFF) // NONE
-                1 -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_ONE) // ONE
-                2 -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_ALL) // ALL
+                RepeatMode.NONE -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_OFF) // NONE
+                RepeatMode.ONE -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_ONE) // ONE
+                RepeatMode.ALL -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_ALL) // ALL
                 else -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_OFF)
             }
             
@@ -435,10 +436,10 @@ class AppleMusicPlaybackManager(
         
         // Map the SDK repeat mode to our app's repeat mode
         val appRepeatMode = when (currentRepeatMode) {
-            PlaybackRepeatMode.REPEAT_MODE_OFF -> 0
-            PlaybackRepeatMode.REPEAT_MODE_ONE -> 1
-            PlaybackRepeatMode.REPEAT_MODE_ALL -> 2
-            else -> 0
+            PlaybackRepeatMode.REPEAT_MODE_OFF -> RepeatMode.NONE
+            PlaybackRepeatMode.REPEAT_MODE_ONE -> RepeatMode.ONE
+            PlaybackRepeatMode.REPEAT_MODE_ALL -> RepeatMode.ALL
+            else -> RepeatMode.NONE
         }
         
         _playbackState.value = _playbackState.value.copy(
