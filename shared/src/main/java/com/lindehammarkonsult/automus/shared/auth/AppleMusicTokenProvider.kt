@@ -2,14 +2,10 @@ package com.lindehammarkonsult.automus.shared.auth
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
-import android.util.Base64
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.apple.android.music.MusicKit
-import com.apple.android.music.TokenProvider
+import com.apple.android.sdk.authentication.TokenProvider
 import java.io.IOException
 import java.security.GeneralSecurityException
 
@@ -77,40 +73,32 @@ class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
     }
 
     /**
+     * Implementation of TokenProvider interface method
      * Get the securely stored developer token
      */
-    fun getDeveloperToken(): String? {
+    override fun getDeveloperToken(): String {
+        return encryptedPrefs.getString(KEY_DEVELOPER_TOKEN, "") ?: ""
+    }
+
+    /**
+     * Implementation of TokenProvider interface method
+     * Get the securely stored user token
+     */
+    override fun getUserToken(): String? {
+        return encryptedPrefs.getString(KEY_USER_TOKEN, null)
+    }
+
+    /**
+     * Get nullable developer token - for use in initialization checks
+     */
+    fun getDeveloperTokenOrNull(): String? {
         return encryptedPrefs.getString(KEY_DEVELOPER_TOKEN, null)
     }
 
     /**
-     * Get the securely stored user token
+     * Legacy method for compatibility - delegates to getUserToken()
      */
     fun getMusicUserToken(): String? {
-        return encryptedPrefs.getString(KEY_USER_TOKEN, null)
-    }
-
-    // TokenProvider interface implementation
-
-    override fun getDeveloperToken(callback: TokenProvider.TokenProviderCallback?) {
-        val token = getDeveloperToken()
-        if (token != null && token != "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE" && token.isNotBlank()) {
-            callback?.onSuccess(token)
-            Log.d(TAG, "Developer token provided to MusicKit")
-        } else {
-            callback?.onError("Developer token not available or using placeholder")
-            Log.e(TAG, "Developer token requested but not available or using placeholder")
-        }
-    }
-
-    override fun getMusicUserToken(callback: TokenProvider.TokenProviderCallback?) {
-        val token = getMusicUserToken()
-        if (token != null) {
-            callback?.onSuccess(token)
-            Log.d(TAG, "User token provided to MusicKit")
-        } else {
-            callback?.onError("User token not available")
-            Log.e(TAG, "User token requested but not available")
-        }
+        return getUserToken()
     }
 }

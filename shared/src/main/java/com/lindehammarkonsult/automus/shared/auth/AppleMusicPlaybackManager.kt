@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Process
 import android.util.Log
-import com.apple.android.music.MediaItem
 import com.apple.android.music.playback.controller.MediaPlayerController
 import com.apple.android.music.playback.controller.MediaPlayerControllerFactory
 import com.apple.android.music.playback.model.MediaPlayerException
@@ -68,7 +67,8 @@ class AppleMusicPlaybackManager(
         handler = Handler(handlerThread.looper)
         
         // Check if we have valid tokens
-        val devToken = tokenProvider.getDeveloperToken()
+        // Use the nullable version of the developer token getter
+        val devToken = tokenProvider.getDeveloperTokenOrNull()
         hasValidAuthentication = devToken != null && 
             devToken != "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE" && 
             devToken.isNotBlank()
@@ -103,15 +103,22 @@ class AppleMusicPlaybackManager(
      * Play a track by ID
      */
     fun playTrack(trackId: String) {
-        if (!hasValidAuthentication || tokenProvider.getMusicUserToken() == null) {
+        // Cast to avoid overload resolution ambiguity
+        val userToken: String? = tokenProvider.userToken
+        if (!hasValidAuthentication || userToken == null) {
             Log.e(TAG, "Cannot play track: User not authenticated or missing valid token")
             return
         }
         
         try {
+            // Create catalog playback queue item provider
             val songUrl = "music:/song/$trackId"
-            playerController.prepareToPlay(songUrl)
-            playerController.play()
+            val queueProvider = com.apple.android.music.playback.queue.CatalogPlaybackQueueItemProvider.Builder()
+                .items(com.apple.android.music.playback.model.MediaItemType.SONG, trackId)
+                .build()
+            
+            // Prepare and play
+            playerController.prepare(queueProvider, true)  // true means play when ready
             Log.d(TAG, "Playing track: $trackId")
         } catch (e: Exception) {
             Log.e(TAG, "Error playing track: ${e.message}")
@@ -122,19 +129,25 @@ class AppleMusicPlaybackManager(
     private inner class EmergencyTokenProvider : com.apple.android.sdk.authentication.TokenProvider {
         override fun getDeveloperToken(): String = ""
         
-        override fun getMusicUserToken(): String? = null
+        override fun getUserToken(): String? = null  // Changed from getMusicUserToken to getUserToken
     }
     
     /**
      * Play an album by ID
      */
     fun playAlbum(albumId: String) {
-        if (tokenProvider.getMusicUserToken() == null) return
+        // Cast to avoid overload resolution ambiguity
+        val userToken: String? = tokenProvider.getUserToken()
+        if (userToken == null) return
         
         try {
-            val albumUrl = "music:/album/$albumId"
-            playerController.prepareToPlay(albumUrl)
-            playerController.play()
+            // Create catalog playback queue item provider for album
+            val queueProvider = com.apple.android.music.playback.queue.CatalogPlaybackQueueItemProvider.Builder()
+                .containers(com.apple.android.music.playback.model.MediaContainerType.ALBUM, albumId)
+                .build()
+            
+            // Prepare and play
+            playerController.prepare(queueProvider, true)
             Log.d(TAG, "Playing album: $albumId")
         } catch (e: Exception) {
             Log.e(TAG, "Error playing album: ${e.message}")
@@ -145,12 +158,18 @@ class AppleMusicPlaybackManager(
      * Play a playlist by ID
      */
     fun playPlaylist(playlistId: String) {
-        if (tokenProvider.getMusicUserToken() == null) return
+        // Cast to avoid overload resolution ambiguity
+        val userToken: String? = tokenProvider.getUserToken()
+        if (userToken == null) return
         
         try {
-            val playlistUrl = "music:/playlist/$playlistId"
-            playerController.prepareToPlay(playlistUrl)
-            playerController.play()
+            // Create catalog playback queue item provider for playlist
+            val queueProvider = com.apple.android.music.playback.queue.CatalogPlaybackQueueItemProvider.Builder()
+                .containers(com.apple.android.music.playback.model.MediaContainerType.PLAYLIST, playlistId)
+                .build()
+            
+            // Prepare and play
+            playerController.prepare(queueProvider, true)
             Log.d(TAG, "Playing playlist: $playlistId")
         } catch (e: Exception) {
             Log.e(TAG, "Error playing playlist: ${e.message}")
@@ -162,7 +181,7 @@ class AppleMusicPlaybackManager(
      */
     fun togglePlayPause() {
         try {
-            if (playerController.playbackState == PlaybackState.PLAYING) {
+            if (playerController.getPlaybackState() == PlaybackState.PLAYING) {
                 playerController.pause()
             } else {
                 playerController.play()
@@ -205,7 +224,7 @@ class AppleMusicPlaybackManager(
      */
     fun seekTo(positionMs: Long) {
         try {
-            playerController.seekToPosition(positionMs / 1000.0) // Convert ms to seconds
+            playerController.seekToPosition(positionMs) // SDK expects milliseconds
         } catch (e: Exception) {
             Log.e(TAG, "Error seeking to position: ${e.message}")
         }
@@ -218,10 +237,10 @@ class AppleMusicPlaybackManager(
     fun setRepeatMode(mode: Int) {
         try {
             when (mode) {
-                0 -> playerController.setRepeatMode(PlaybackRepeatMode.NONE)
-                1 -> playerController.setRepeatMode(PlaybackRepeatMode.ONE)
-                2 -> playerController.setRepeatMode(PlaybackRepeatMode.ALL)
-                else -> playerController.setRepeatMode(PlaybackRepeatMode.NONE)
+                0 -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_OFF) // NONE
+                1 -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_ONE) // ONE
+                2 -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_ALL) // ALL
+                else -> playerController.setRepeatMode(PlaybackRepeatMode.REPEAT_MODE_OFF)
             }
             
             // Update playback state
@@ -239,8 +258,8 @@ class AppleMusicPlaybackManager(
     fun setShuffleMode(shuffleEnabled: Boolean) {
         try {
             playerController.setShuffleMode(
-                if (shuffleEnabled) PlaybackShuffleMode.SONGS
-                else PlaybackShuffleMode.OFF
+                if (shuffleEnabled) PlaybackShuffleMode.SHUFFLE_MODE_SONGS // SONGS mode
+                else PlaybackShuffleMode.SHUFFLE_MODE_OFF // OFF mode
             )
             
             // Update playback state
@@ -257,8 +276,8 @@ class AppleMusicPlaybackManager(
      */
     private fun updatePlaybackState() {
         try {
-            val playbackPosition = (playerController.playbackPosition * 1000).toLong()
-            val isPlaying = playerController.playbackState == PlaybackState.PLAYING
+            val playbackPosition = playerController.getCurrentPosition()
+            val isPlaying = playerController.getPlaybackState() == PlaybackState.PLAYING
             
             _playbackState.value = _playbackState.value.copy(
                 isPlaying = isPlaying,
@@ -318,22 +337,24 @@ class AppleMusicPlaybackManager(
         previousItem: PlayerQueueItem?,
         currentItem: PlayerQueueItem?
     ) {
-        Log.d(TAG, "Current item changed: ${currentItem?.title ?: "null"}")
+        Log.d(TAG, "Current item changed: ${currentItem?.getItem()?.getTitle() ?: "null"}")
         
         // Update our playback state with the new track info
         currentItem?.let { item ->
+            val mediaItem = item.item // Get the PlayerMediaItem from PlayerQueueItem
             val currentTrack = Track(
-                id = item.id ?: UUID.randomUUID().toString(),
-                title = item.title ?: "Unknown",
-                albumName = item.albumName ?: "Unknown",
-                artistName = item.artistName ?: "Unknown",
-                albumId = item.albumId ?: "",
-                artistId = item.artistId ?: "",
-                artworkUri = item.artworkUrl?.let { android.net.Uri.parse(it) },
+                id = mediaItem.subscriptionStoreId ?: UUID.randomUUID().toString(),
+                title = mediaItem.title ?: "Unknown",
+                albumName = mediaItem.albumTitle ?: "Unknown",
+                artistName = mediaItem.artistName ?: "Unknown",
+                albumId = mediaItem.albumSubscriptionStoreId ?: "",
+                artistId = mediaItem.artistSubscriptionStoreId ?: "",
+                artworkUri = mediaItem.getArtworkUrl(300, 300)?.let { android.net.Uri.parse(it) },
                 streamUrl = null, // Handled by SDK
                 previewUrl = null,
-                durationMs = (item.duration * 1000).toLong(),
-                isExplicit = item.isExplicit ?: false
+                durationMs = mediaItem.duration,
+                isExplicit = mediaItem.isExplicitContent,
+                subtitle = "${mediaItem.artistName ?: ""} • ${mediaItem.albumTitle ?: ""}" // Construct subtitle from artist and album
             )
             
             _playbackState.value = _playbackState.value.copy(
@@ -347,14 +368,14 @@ class AppleMusicPlaybackManager(
         queueItem: PlayerQueueItem,
         endPosition: Long
     ) {
-        Log.d(TAG, "Item ended: ${queueItem.title}")
+        Log.d(TAG, "Item ended: ${queueItem.item.title}")
     }
 
     override fun onMetadataUpdated(
         playerController: MediaPlayerController,
         currentItem: PlayerQueueItem
     ) {
-        Log.d(TAG, "Metadata updated: ${currentItem.title}")
+        Log.d(TAG, "Metadata updated: ${currentItem.item.title}")
         
         // If needed, update our track information with the fresh metadata
     }
@@ -367,18 +388,20 @@ class AppleMusicPlaybackManager(
         
         // Update our queue in the app state
         val tracks = playbackQueueItems.map { item ->
+            val mediaItem = item.getItem() // Get the PlayerMediaItem from PlayerQueueItem
             Track(
-                id = item.id ?: UUID.randomUUID().toString(),
-                title = item.title ?: "Unknown",
-                albumName = item.albumName ?: "Unknown",
-                artistName = item.artistName ?: "Unknown",
-                albumId = item.albumId ?: "",
-                artistId = item.artistId ?: "",
-                artworkUri = item.artworkUrl?.let { android.net.Uri.parse(it) },
+                id = mediaItem.subscriptionStoreId ?: UUID.randomUUID().toString(),
+                title = mediaItem.title ?: "Unknown",
+                albumName = mediaItem.albumTitle ?: "Unknown",
+                artistName = mediaItem.artistName ?: "Unknown",
+                albumId = mediaItem.albumSubscriptionStoreId ?: "",
+                artistId = mediaItem.artistSubscriptionStoreId ?: "",
+                artworkUri = mediaItem.getArtworkUrl(300, 300)?.let { android.net.Uri.parse(it) },
                 streamUrl = null,
                 previewUrl = null,
-                durationMs = (item.duration * 1000).toLong(),
-                isExplicit = item.isExplicit ?: false
+                durationMs = mediaItem.duration,
+                isExplicit = mediaItem.isExplicitContent,
+                subtitle = "${mediaItem.artistName ?: ""} • ${mediaItem.albumTitle ?: ""}" // Construct subtitle from artist and album
             )
         }
         
@@ -412,9 +435,9 @@ class AppleMusicPlaybackManager(
         
         // Map the SDK repeat mode to our app's repeat mode
         val appRepeatMode = when (currentRepeatMode) {
-            PlaybackRepeatMode.NONE -> 0
-            PlaybackRepeatMode.ONE -> 1
-            PlaybackRepeatMode.ALL -> 2
+            PlaybackRepeatMode.REPEAT_MODE_OFF -> 0
+            PlaybackRepeatMode.REPEAT_MODE_ONE -> 1
+            PlaybackRepeatMode.REPEAT_MODE_ALL -> 2
             else -> 0
         }
         
@@ -429,7 +452,7 @@ class AppleMusicPlaybackManager(
     ) {
         Log.d(TAG, "Shuffle mode changed: $currentShuffleMode")
         
-        val isShuffleOn = currentShuffleMode != PlaybackShuffleMode.OFF
+        val isShuffleOn = currentShuffleMode != PlaybackShuffleMode.SHUFFLE_MODE_OFF
         
         _playbackState.value = _playbackState.value.copy(
             shuffleMode = isShuffleOn

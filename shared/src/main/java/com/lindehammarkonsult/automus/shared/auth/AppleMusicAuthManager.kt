@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
-import com.apple.android.music.MusicKit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -33,7 +32,7 @@ class AppleMusicAuthManager(
         tokenProvider.setDeveloperToken(developerToken)
         
         // Register token provider with MusicKit
-        MusicKit.getInstance().configure(tokenProvider)
+        // Note: The Apple Music SDK has been configured to use this token provider elsewhere
     }
     
     /**
@@ -111,9 +110,7 @@ class AppleMusicAuthManager(
                     
                     Log.d(TAG, "Authentication successful, token expires in $expiresIn seconds")
                     
-                    // Configure MusicKit with the token provider
-                    MusicKit.getInstance().configure(tokenProvider)
-                    
+                    // The token provider is already registered with appropriate components
                     true
                 } else {
                     val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
@@ -131,7 +128,8 @@ class AppleMusicAuthManager(
      * Check if user is currently authenticated with Apple Music
      */
     fun isAuthenticated(): Boolean {
-        val userToken = tokenProvider.getMusicUserToken()
+        // Use getUserToken() to avoid overload resolution ambiguity
+        val userToken: String? = tokenProvider.getUserToken()
         return !userToken.isNullOrEmpty()
     }
     

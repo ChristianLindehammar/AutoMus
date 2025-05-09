@@ -448,60 +448,68 @@ class AppleMusicService : MediaBrowserServiceCompat() {
         val searchResults = repository.search(query)
         val mediaItems = mutableListOf<MediaItem>()
         
-        // Add tracks from search
-        searchResults.songs?.data?.forEach { track ->
-            mediaItems.add(track.toMediaItem())
+        // Add tracks from search with explicit type annotations
+        searchResults.songs?.data?.let { trackList: List<Track> ->
+            for (track in trackList) {
+                mediaItems.add(track.toMediaItem())
+            }
         }
         
-        // Add albums from search (browsable)
-        searchResults.albums?.data?.forEach { album ->
-            val mediaId = "album_${album.id}"
-            
-            mediaItems.add(
-                MediaItem(
-                    MediaDescriptionCompat.Builder()
-                        .setMediaId(mediaId)
-                        .setTitle(album.title)
-                        .setSubtitle(album.subtitle)
-                        .setIconUri(album.artworkUri)
-                        .build(),
-                    MediaItem.FLAG_BROWSABLE
+        // Add albums from search (browsable) with explicit type annotations
+        searchResults.albums?.data?.let { albumList: List<Album> ->
+            for (album in albumList) {
+                val mediaId = "album_${album.id}"
+                
+                mediaItems.add(
+                    MediaItem(
+                        MediaDescriptionCompat.Builder()
+                            .setMediaId(mediaId)
+                            .setTitle(album.title)
+                            .setSubtitle(album.subtitle)
+                            .setIconUri(album.artworkUri)
+                            .build(),
+                        MediaItem.FLAG_BROWSABLE
+                    )
                 )
-            )
+            }
         }
         
-        // Add playlists from search (browsable)
-        searchResults.playlists?.data?.forEach { playlist ->
-            val mediaId = "playlist_${playlist.id}"
-            
-            mediaItems.add(
-                MediaItem(
-                    MediaDescriptionCompat.Builder()
-                        .setMediaId(mediaId)
-                        .setTitle(playlist.title)
-                        .setSubtitle(playlist.subtitle)
-                        .setIconUri(playlist.artworkUri)
-                        .build(),
-                    MediaItem.FLAG_BROWSABLE
+        // Add playlists from search (browsable) with explicit type annotations
+        searchResults.playlists?.data?.let { playlistList: List<Playlist> ->
+            for (playlist in playlistList) {
+                val mediaId = "playlist_${playlist.id}"
+                
+                mediaItems.add(
+                    MediaItem(
+                        MediaDescriptionCompat.Builder()
+                            .setMediaId(mediaId)
+                            .setTitle(playlist.title)
+                            .setSubtitle(playlist.subtitle)
+                            .setIconUri(playlist.artworkUri)
+                            .build(),
+                        MediaItem.FLAG_BROWSABLE
+                    )
                 )
-            )
+            }
         }
         
-        // Add artists from search (browsable)
-        searchResults.artists?.data?.forEach { artist ->
-            val mediaId = "artist_${artist.id}"
-            
-            mediaItems.add(
-                MediaItem(
-                    MediaDescriptionCompat.Builder()
-                        .setMediaId(mediaId)
-                        .setTitle(artist.title)
-                        .setSubtitle(artist.subtitle)
-                        .setIconUri(artist.artworkUri)
-                        .build(),
-                    MediaItem.FLAG_BROWSABLE
+        // Add artists from search (browsable) with explicit type annotations
+        searchResults.artists?.data?.let { artistList: List<Artist> ->
+            for (artist in artistList) {
+                val mediaId = "artist_${artist.id}"
+                
+                mediaItems.add(
+                    MediaItem(
+                        MediaDescriptionCompat.Builder()
+                            .setMediaId(mediaId)
+                            .setTitle(artist.title)
+                            .setSubtitle(artist.subtitle)
+                            .setIconUri(artist.artworkUri)
+                            .build(),
+                        MediaItem.FLAG_BROWSABLE
+                    )
                 )
-            )
+            }
         }
         
         return mediaItems
@@ -594,7 +602,7 @@ class AppleMusicService : MediaBrowserServiceCompat() {
             // Search and play the first result
             serviceScope.launch {
                 val searchResults = repository.search(query)
-                val tracks = searchResults.songs?.data ?: emptyList()
+                val tracks: List<Track> = searchResults.songs?.data ?: emptyList()
                 
                 if (tracks.isNotEmpty()) {
                     repository.playTrack(tracks[0].id)
@@ -612,6 +620,16 @@ class AppleMusicService : MediaBrowserServiceCompat() {
 
         override fun getSupportedPrepareActions(): Long {
             return MediaSessionConnector.PlaybackPreparer.ACTIONS
+        }
+        
+        override fun onCommand(
+            player: com.google.android.exoplayer2.Player,
+            command: String,
+            extras: Bundle?,
+            cb: android.os.ResultReceiver?
+        ): Boolean {
+            // Not implementing any custom commands in this preparer
+            return false
         }
     }
     

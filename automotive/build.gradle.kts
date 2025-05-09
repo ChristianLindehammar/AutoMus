@@ -45,10 +45,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(project(":shared"))
-    
     // Automotive
-    implementation("androidx.car.app:app:1.2.0")
-    implementation("androidx.car.app:app-automotive:1.2.0")
+    implementation(libs.androidx.app)
+    implementation(libs.androidx.app.automotive)
     
     // UI
     implementation(libs.material)

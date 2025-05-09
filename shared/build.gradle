@@ -6,10 +6,9 @@ plugins {
 
 android {
     namespace 'com.lindehammarkonsult.automus.shared'
-    compileSdkVersion 35
-
     defaultConfig {
         minSdkVersion 31
+        compileSdk 35
         targetSdkVersion 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -36,47 +35,47 @@ android {
 
 dependencies {
     // Base Android dependencies
-    implementation "androidx.media:media:1.7.0"
-    implementation "androidx.core:core-ktx:1.15.0"
-    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation libs.androidx.media
+    implementation libs.androidx.core.ktx.v1160
+    implementation libs.androidx.appcompat
     
     // ExoPlayer for media playback with extensions
-    implementation "com.google.android.exoplayer:exoplayer-core:2.19.1"
-    implementation "com.google.android.exoplayer:exoplayer-ui:2.19.1"
-    implementation "com.google.android.exoplayer:extension-mediasession:2.19.1"
-    implementation "com.google.android.exoplayer:extension-cast:2.19.1"
+    implementation libs.exoplayer.core
+    implementation libs.exoplayer.ui
+    implementation libs.extension.mediasession
+    implementation libs.extension.cast
     
     // Browser for CustomTabsIntent
-    implementation "androidx.browser:browser:1.6.0"
+    implementation libs.androidx.browser
     
     // Networking
-    implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
-    implementation "com.squareup.okhttp3:okhttp:4.11.0"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.11.0"
-    implementation "com.squareup.moshi:moshi-kotlin:1.15.0"
-    implementation "com.squareup.moshi:moshi-adapters:1.15.0"
+    implementation libs.retrofit
+    implementation libs.retrofit.moshi
+    implementation libs.okhttp
+    implementation libs.logging.interceptor.v4120
+    implementation libs.moshi
+    implementation libs.moshi.adapters
     
     // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+    implementation libs.coroutines.core
+    implementation libs.coroutines.android
     
     // Lifecycle components
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.7.0"
+    implementation libs.androidx.lifecycle.viewmodel.ktx.v290
+    implementation libs.androidx.lifecycle.runtime.ktx.v290
+    implementation libs.androidx.lifecycle.livedata.ktx.v290
     
     // Security for token handling
-    implementation "androidx.security:security-crypto:1.0.0"
+    implementation libs.androidx.security.crypto.v100
     
     // MusicKit SDK for Android - direct file references
     implementation files('libs/musickitauth-release-1.1.2.aar')
     implementation files('libs/mediaplayback-release-1.1.1.aar')
     
     // Testing
-    testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.test.ext:junit:1.2.1"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.6.1"
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
     
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.3"
+    coreLibraryDesugaring libs.desugar.jdk.libs
 }
