@@ -14,7 +14,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.lindehammarkonsult.automus.MainActivity
+import com.lindehammarkonsult.automus.R
 import com.lindehammarkonsult.automus.databinding.FragmentSearchBinding
+import com.lindehammarkonsult.automus.model.GenreCategory
+import com.lindehammarkonsult.automus.ui.adapters.GenreCategoryAdapter
 import com.lindehammarkonsult.automus.ui.adapters.MediaCategoryAdapter
 import com.lindehammarkonsult.automus.viewmodel.MusicViewModel
 
@@ -193,6 +197,56 @@ class SearchFragment : Fragment() {
         val view = activity?.currentFocus ?: return
         val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+    
+    private fun setupSearchCategories() {
+        // Set up the search categories with GenreCategoryAdapter
+        val genreCategoryAdapter = GenreCategoryAdapter { genre ->
+            // When a genre is clicked, perform a search for that genre
+            binding.searchView.setQuery(genre.name, true)
+        }
+        
+        // Set up the recycler view
+        binding.searchCategoriesGrid.apply {
+            layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 2)
+            adapter = genreCategoryAdapter
+        }
+        
+        // Create sample genre categories
+        val genreCategories = listOf(
+            GenreCategory(
+                id = "genre_1",
+                name = "Pop",
+                mediaId = "genre_pop"
+            ),
+            GenreCategory(
+                id = "genre_2",
+                name = "Rock",
+                mediaId = "genre_rock"
+            ),
+            GenreCategory(
+                id = "genre_3",
+                name = "Hip-Hop",
+                mediaId = "genre_hiphop"
+            ),
+            GenreCategory(
+                id = "genre_4",
+                name = "Electronic",
+                mediaId = "genre_electronic"
+            ),
+            GenreCategory(
+                id = "genre_5",
+                name = "Jazz",
+                mediaId = "genre_jazz"
+            ),
+            GenreCategory(
+                id = "genre_6",
+                name = "Classical",
+                mediaId = "genre_classical"
+            )
+        )
+        
+        genreCategoryAdapter.submitList(genreCategories)
     }
     
     companion object {

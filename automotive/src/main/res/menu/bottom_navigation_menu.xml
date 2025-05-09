@@ -12,8 +12,4 @@
         android:id="@+id/nav_search"
         android:icon="@drawable/ic_search"
         android:title="Search" />
-    <item
-        android:id="@+id/nav_now_playing"
-        android:icon="@drawable/ic_now_playing"
-        android:title="Now Playing" />
 </menu>

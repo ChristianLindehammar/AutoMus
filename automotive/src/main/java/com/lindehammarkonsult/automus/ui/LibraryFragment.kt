@@ -12,12 +12,16 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.lindehammarkonsult.automus.MainActivity
+import com.lindehammarkonsult.automus.R
 import com.lindehammarkonsult.automus.databinding.FragmentLibraryBinding
-import com.lindehammarkonsult.automus.ui.adapters.MediaCategoryAdapter
+import com.lindehammarkonsult.automus.ui.adapters.PlaylistAdapter
+import com.lindehammarkonsult.automus.ui.adapters.LikedSongsAdapter
+import com.lindehammarkonsult.automus.ui.adapters.RecentlyPlayedAdapter
 import com.lindehammarkonsult.automus.viewmodel.MusicViewModel
 
 /**
- * Fragment displaying the user's music library
+ * Fragment displaying the user\'s music library
  */
 class LibraryFragment : Fragment() {
     
@@ -25,7 +29,9 @@ class LibraryFragment : Fragment() {
     private val binding get() = _binding!!
     
     private lateinit var viewModel: MusicViewModel
-    private lateinit var mediaAdapter: MediaCategoryAdapter
+    private lateinit var playlistAdapter: PlaylistAdapter
+    private lateinit var likedSongsAdapter: LikedSongsAdapter
+    private lateinit var recentlyPlayedAdapter: RecentlyPlayedAdapter
     
     private var mediaAwareActivity: MediaAwareActivity? = null
     
@@ -52,11 +58,35 @@ class LibraryFragment : Fragment() {
         
         viewModel = ViewModelProvider(requireActivity())[MusicViewModel::class.java]
         
-        setupRecyclerView()
+        // Setup tabs navigation
+        binding.libraryTabs.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                when (tab?.position) {
+                    0 -> { /* Already in Library, do nothing */ }
+                    1 -> {
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragmentContainer, BrowseFragment())
+                            .commit()
+                        (activity as? MainActivity)?.updateSelectedNavigationItem(R.id.nav_browse)
+                    }
+                    2 -> {
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragmentContainer, SearchFragment())
+                            .commit()
+                        (activity as? MainActivity)?.updateSelectedNavigationItem(R.id.nav_search)
+                    }
+                }
+            }
+
+            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) { }
+            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) { }
+        })
+        
+        setupRecyclerViews() // Renamed from setupRecyclerView
         setupObservers()
         
-        // Initial load of library categories
-        loadLibraryCategories()
+        // Initial load of library categories - this will need to be updated
+        loadAllLibraryData() // Renamed and will be adjusted
     }
     
     override fun onDestroyView() {
@@ -64,34 +94,106 @@ class LibraryFragment : Fragment() {
         _binding = null
     }
     
-    private fun setupRecyclerView() {
-        mediaAdapter = MediaCategoryAdapter { mediaItem ->
+    private fun setupRecyclerViews() { // Renamed and modified
+        // Playlist RecyclerView
+        playlistAdapter = PlaylistAdapter { mediaItem ->
             handleMediaItemClick(mediaItem)
         }
-        
-        binding.libraryRecyclerView.apply {
-            adapter = mediaAdapter
+        binding.playlistsRecyclerView.apply {
+            adapter = playlistAdapter
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            // addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)) // Optional: if you want dividers
+        }
+
+        // Liked Songs RecyclerView
+        // Update LikedSongsAdapter instantiation and provide the onLikeClick callback
+        likedSongsAdapter = LikedSongsAdapter(
+            onItemClick = { mediaItem ->
+                handleMediaItemClick(mediaItem)
+            },
+            onLikeClick = { mediaItem -> // Changed: Lambda now only takes mediaItem
+                // Call ViewModel to handle like/unlike
+                viewModel.toggleLikeStatus(mediaItem) // Changed: Call with only mediaItem
+            }
+        )
+        binding.likedSongsRecyclerView.apply {
+            adapter = likedSongsAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        }
+
+        // Recently Played RecyclerView
+        // Update RecentlyPlayedAdapter instantiation
+        recentlyPlayedAdapter = RecentlyPlayedAdapter { mediaItem ->
+            handleMediaItemClick(mediaItem)
+        }
+        binding.recentlyPlayedRecyclerView.apply {
+            adapter = recentlyPlayedAdapter
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            // addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL)) // Optional: if you want dividers
         }
     }
     
     private fun setupObservers() {
         // Observe loading state
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoadingValue -> // isLoadingValue might be Any?
+            val isActuallyLoading = isLoadingValue as? Boolean // Safe cast to Boolean?
+
+            binding.progressBar.visibility = if (isActuallyLoading == true) View.VISIBLE else View.GONE
+            
+            // Show/hide main content based on loading state and data availability
+            if (isActuallyLoading == true) { // Check against true
+                binding.contentScrollView.visibility = View.GONE
+                binding.emptyStateText.visibility = View.GONE
+            }
+            // Note: updateOverallVisibility() is called by other observers, not directly here.
+            // If it were, it would need to be after the content/empty text visibility is potentially set by this block.
         }
         
-        // Observe media items
-        viewModel.mediaItems.observe(viewLifecycleOwner) { items ->
-            if (items.isNullOrEmpty()) {
-                binding.emptyStateText.visibility = View.VISIBLE
-                binding.libraryRecyclerView.visibility = View.GONE
+        // Observe Playlists
+        viewModel.playlists.observe(viewLifecycleOwner) { items -> 
+             if (items.isNullOrEmpty()) {
+                // Handle empty state for playlists if needed, e.g., hide the section or show a message
+                binding.playlistsRecyclerView.visibility = View.GONE
+                binding.playlistsTitle.visibility = View.GONE
             } else {
-                binding.emptyStateText.visibility = View.GONE
-                binding.libraryRecyclerView.visibility = View.VISIBLE
-                mediaAdapter.submitList(items)
+                binding.playlistsRecyclerView.visibility = View.VISIBLE
+                binding.playlistsTitle.visibility = View.VISIBLE
+                playlistAdapter.submitList(items) // Submit playlist items
             }
+            updateOverallVisibility()
+        }
+
+        // Observe Liked Songs
+        viewModel.likedSongs.observe(viewLifecycleOwner) { items -> 
+            if (items.isNullOrEmpty()) {
+                // Handle empty state for liked songs
+                binding.likedSongsRecyclerView.visibility = View.GONE
+                binding.likedSongsTitle.visibility = View.GONE
+            } else {
+                binding.likedSongsRecyclerView.visibility = View.VISIBLE
+                binding.likedSongsTitle.visibility = View.VISIBLE
+                // Ensure the adapter is notified of data changes correctly,
+                // especially if the list instance itself doesn't change but its content does.
+                // submitList handles this well.
+                likedSongsAdapter.submitList(items.toList()) // Use toList() to ensure a new list is submitted if items is mutable
+            }
+            updateOverallVisibility()
+        }
+        
+        // Observe Recently Played
+        viewModel.recentlyPlayedItems.observe(viewLifecycleOwner) { items -> 
+            if (items.isNullOrEmpty()) {
+                // Handle empty state for recently played
+                binding.recentlyPlayedRecyclerView.visibility = View.GONE
+                binding.recentlyPlayedTitle.visibility = View.GONE
+            } else {
+                binding.recentlyPlayedRecyclerView.visibility = View.VISIBLE
+                binding.recentlyPlayedTitle.visibility = View.VISIBLE
+                // Ensure the adapter is notified of data changes correctly
+                recentlyPlayedAdapter.submitList(items.toList()) // Use toList() for consistency
+            }
+            updateOverallVisibility()
         }
         
         // Observe playback state to show/hide mini player
@@ -103,38 +205,65 @@ class LibraryFragment : Fragment() {
             }
         }
     }
-    
-    private fun loadLibraryCategories() {
-        viewModel.setLoading(true)
-        
-        // This would normally connect to a MediaBrowser service
-        // For now, we'll create some dummy data
-        val dummyCategories = listOf(
-            createMediaItem("library_artists", "Artists", "Browse your favorite artists"),
-            createMediaItem("library_albums", "Albums", "Browse your albums"),
-            createMediaItem("library_playlists", "Playlists", "Browse your playlists"),
-            createMediaItem("library_songs", "Songs", "Browse all songs")
-        )
-        
-        viewModel.setMediaItems(dummyCategories)
-        viewModel.setLoading(false)
-    }
-    
-    private fun handleMediaItemClick(mediaItem: MediaBrowserCompat.MediaItem) {
-        if (mediaItem.isBrowsable) {
-            // Navigate to the browsable content
-            // In a real implementation, we would browse the media item children
-            // and update the UI with the new content
-        } else if (mediaItem.isPlayable) {
-            // Play the media
-            val mediaController = MediaControllerCompat.getMediaController(requireActivity())
-            mediaController?.transportControls?.playFromMediaId(mediaItem.mediaId, null)
-            
-            // Show the mini player
-            mediaAwareActivity?.showMiniPlayer()
+
+    private fun updateOverallVisibility() {
+        val currentIsLoadingRaw = viewModel.isLoading.value // This could be Any?
+        val currentIsLoading = currentIsLoadingRaw as? Boolean // Safe cast to Boolean?
+
+        // If actively loading (currentIsLoading is true), the isLoading observer handles progress bar 
+        // and hides contentScrollView/emptyStateText. This function should only act when not loading.
+        if (currentIsLoading == true) {
+            // It's important that the isLoading observer has already set
+            // contentScrollView and emptyStateText to GONE.
+            return 
+        }
+
+        // Not actively loading (currentIsLoading is false or null)
+        val playlistsVisible = binding.playlistsRecyclerView.visibility == View.VISIBLE
+        val likedSongsVisible = binding.likedSongsRecyclerView.visibility == View.VISIBLE
+        val recentlyPlayedVisible = binding.recentlyPlayedRecyclerView.visibility == View.VISIBLE
+
+        val anySectionDataVisible = playlistsVisible || likedSongsVisible || recentlyPlayedVisible
+
+        if (anySectionDataVisible) {
+            // If not loading AND at least one section has content and is visible
+            binding.emptyStateText.visibility = View.GONE
+            binding.contentScrollView.visibility = View.VISIBLE
+        } else {
+            // If not loading AND no sections have content / are visible
+            binding.emptyStateText.visibility = View.VISIBLE
+            binding.contentScrollView.visibility = View.GONE
         }
     }
     
+    private fun loadAllLibraryData() { // Renamed and needs actual implementation
+        // viewModel.setLoading(true) // setLoading is now handled by fetchAllLibraryData in ViewModel
+        
+        // This would normally connect to a MediaBrowser service or repository
+        // to fetch playlists, liked songs, and recently played items.
+        // For now, we call the new method in the ViewModel that simulates this.
+        viewModel.fetchAllLibraryData()
+        
+        // viewModel.setLoading(false) // setLoading is now handled by fetchAllLibraryData in ViewModel
+    }
+    
+    private fun handleMediaItemClick(mediaItem: MediaBrowserCompat.MediaItem) {
+        val mediaController = MediaControllerCompat.getMediaController(requireActivity())
+        if (mediaItem.isPlayable) {
+            mediaController?.transportControls?.playFromMediaId(mediaItem.mediaId, null)
+            mediaAwareActivity?.showMiniPlayer()
+        } else if (mediaItem.isBrowsable) {
+            // Navigate to a new fragment or activity to browse this item's content
+            // For example, if it's an album or playlist
+            // This might involve creating a new BrowseFragment instance with the mediaId
+            val browseFragment = BrowseFragment.newInstance(mediaItem.mediaId!!)
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, browseFragment)
+                .addToBackStack(null) // Add to back stack so user can navigate back
+                .commit()
+        }
+    }
+
     private fun createMediaItem(
         mediaId: String,
         title: String,

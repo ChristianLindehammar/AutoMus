@@ -3,21 +3,76 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
-    <SearchView
-        android:id="@+id/search_view"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/search_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/apple_red"
+        app:tabSelectedTextColor="@color/apple_red"
+        app:tabTextColor="@color/text_secondary_light"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Library" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Browse" />
+            
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search" />
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/search_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:iconifiedByDefault="false"
-        android:queryHint="Search Apple Music"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/search_tabs">
 
+        <SearchView
+            android:id="@+id/search_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:iconifiedByDefault="false"
+            android:queryHint="Search for songs, artists, or playlists"
+            android:background="@color/background_light" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/search_results_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        android:text="Results"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_container"
+        tools:visibility="visible" />
+        
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_results_list"
         android:layout_width="0dp"
@@ -27,15 +82,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_view"
+        app:layout_constraintTop_toBottomOf="@+id/search_results_title"
         tools:listitem="@layout/item_media_category"
         tools:visibility="visible" />
-
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/search_initial_state_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:constraint_referenced_ids="search_initial_text,search_suggestion_1,search_suggestion_2,search_suggestion_3" />
 
     <TextView
         android:id="@+id/search_initial_text"
@@ -45,56 +94,45 @@
         android:layout_marginTop="64dp"
         android:layout_marginEnd="32dp"
         android:gravity="center"
-        android:text="Try searching for songs, albums, or artists"
-        android:textAppearance="?attr/textAppearanceBody1"
+        android:text="Search for songs, artists, or playlists"
+        android:textSize="16sp"
+        android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_view" />
+        app:layout_constraintTop_toBottomOf="@+id/search_container" />
 
+    <!-- Search Suggestions Section -->
     <TextView
-        android:id="@+id/search_suggestion_1"
+        android:id="@+id/search_categories_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:padding="12dp"
-        android:text="Top Charts"
-        app:layout_constraintEnd_toEndOf="@+id/search_initial_text"
-        app:layout_constraintStart_toStartOf="@+id/search_initial_text"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="16dp"
+        android:text="Search by Category"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/search_initial_text" />
 
-    <TextView
-        android:id="@+id/search_suggestion_2"
+    <!-- Category Grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/search_categories_grid"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:padding="12dp"
-        android:text="New Releases"
-        app:layout_constraintEnd_toEndOf="@+id/search_suggestion_1"
-        app:layout_constraintStart_toStartOf="@+id/search_suggestion_1"
-        app:layout_constraintTop_toBottomOf="@+id/search_suggestion_1" />
-
-    <TextView
-        android:id="@+id/search_suggestion_3"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:padding="12dp"
-        android:text="Popular Playlists"
-        app:layout_constraintEnd_toEndOf="@+id/search_suggestion_2"
-        app:layout_constraintStart_toStartOf="@+id/search_suggestion_2"
-        app:layout_constraintTop_toBottomOf="@+id/search_suggestion_2" />
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_categories_title"
+        tools:listitem="@layout/item_genre_category" />
 
     <TextView
         android:id="@+id/no_results_text"

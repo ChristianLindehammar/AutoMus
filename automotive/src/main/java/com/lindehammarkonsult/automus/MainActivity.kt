@@ -147,12 +147,17 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
                     loadFragment(SearchFragment())
                     true
                 }
-                R.id.nav_now_playing -> {
-                    loadFragment(NowPlayingFragment())
-                    true
-                }
                 else -> false
             }
+        }
+        
+        // Set up toolbar buttons
+        binding.settingsButton.setOnClickListener {
+            // TODO: Implement settings dialog
+        }
+        
+        binding.profileButton.setOnClickListener {
+            // TODO: Implement user profile or sign in dialog
         }
     }
     
@@ -201,7 +206,7 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     
     override fun showNowPlaying() {
         loadFragment(NowPlayingFragment())
-        binding.bottomNavigation.selectedItemId = R.id.nav_now_playing
+        // Don't select any navigation item as "Now Playing" is not part of bottom navigation
     }
     
     // Additional helper methods for handling media updates
@@ -226,5 +231,13 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             // Show mini player since we have active media
             showMiniPlayer()
         }
+    }
+    
+    /**
+     * Updates the selected item in the bottom navigation.
+     * This method is used by fragments to update the navigation UI.
+     */
+    fun updateSelectedNavigationItem(itemId: Int) {
+        binding.bottomNavigation.selectedItemId = itemId
     }
 }
