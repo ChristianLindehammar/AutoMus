@@ -26,7 +26,7 @@ private const val SERVICE_PACKAGE_NAME = "com.lindehammarkonsult.automus"
 /**
  * Main activity for the Apple Music Android Automotive application
  */
-abstract class MainActivity : AppCompatActivity(), MediaAwareActivity {
+class MainActivity : AppCompatActivity(), MediaAwareActivity {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MusicViewModel
