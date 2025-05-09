@@ -91,8 +91,8 @@ class NowPlayingFragment : Fragment() {
         
         binding.apply {
             songTitleText.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
-            artistNameText.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
-            albumNameText.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM)
+            artistText.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
+            albumText.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM)
             
             // Load album art
             val albumArtUri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)
@@ -100,9 +100,9 @@ class NowPlayingFragment : Fragment() {
                 Glide.with(this@NowPlayingFragment)
                     .load(albumArtUri)
                     .placeholder(R.drawable.ic_library)
-                    .into(albumArtImage)
+                    .into(albumArt)
             } else {
-                albumArtImage.setImageResource(R.drawable.ic_library)
+                albumArt.setImageResource(R.drawable.ic_library)
             }
         }
     }

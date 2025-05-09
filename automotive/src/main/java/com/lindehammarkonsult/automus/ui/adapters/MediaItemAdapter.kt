@@ -1,6 +1,7 @@
 package com.lindehammarkonsult.automus.ui.adapters
 
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -11,11 +12,11 @@ import com.lindehammarkonsult.automus.R
 import com.lindehammarkonsult.automus.databinding.ItemMediaBinding
 
 /**
- * Adapter for displaying media categories in a RecyclerView
+ * Adapter for displaying media items in a RecyclerView
  */
-class MediaCategoryAdapter(
+class MediaItemAdapter(
     private val onItemClick: (MediaBrowserCompat.MediaItem) -> Unit
-) : ListAdapter<MediaBrowserCompat.MediaItem, MediaCategoryAdapter.ViewHolder>(DiffCallback) {
+) : ListAdapter<MediaBrowserCompat.MediaItem, MediaItemAdapter.ViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemMediaBinding.inflate(
@@ -37,11 +38,11 @@ class MediaCategoryAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(mediaItem: MediaBrowserCompat.MediaItem) {
-            val description = mediaItem.description
+            val description: MediaDescriptionCompat = mediaItem.description
 
             // Set title and subtitle
             binding.itemTitle.text = description.title
-            binding.itemSubtitle.text = description.subtitle ?: "Category"
+            binding.itemSubtitle.text = description.subtitle
 
             // Load artwork if available
             description.iconUri?.let { uri ->
@@ -50,7 +51,7 @@ class MediaCategoryAdapter(
                     .placeholder(R.drawable.album_art_placeholder)
                     .into(binding.itemImage)
             } ?: run {
-                // Use default icon for categories without artwork
+                // Use default artwork if no URI is available
                 binding.itemImage.setImageResource(R.drawable.album_art_placeholder)
             }
 
@@ -74,7 +75,8 @@ class MediaCategoryAdapter(
             newItem: MediaBrowserCompat.MediaItem
         ): Boolean {
             return oldItem.mediaId == newItem.mediaId &&
-                   oldItem.description.title == newItem.description.title
+                   oldItem.description.title == newItem.description.title &&
+                   oldItem.description.subtitle == newItem.description.subtitle
         }
     }
 }

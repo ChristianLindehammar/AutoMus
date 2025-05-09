@@ -10,7 +10,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.lifecycle.Observer
 import com.lindehammarkonsult.automus.shared.BuildConfig
 import com.lindehammarkonsult.automus.shared.R
 import com.lindehammarkonsult.automus.shared.auth.AppleMusicAuthManager
@@ -73,10 +72,10 @@ class AppleMusicAuthActivity : ComponentActivity() {
         }
         
         // Observe auth state changes
-        authManager.authState.observe(this, Observer { state ->
+        authManager.authState.observe(this) { state ->
             updateUI(state)
-        })
-        
+        }
+
         // Check if already authenticated
         if (authManager.isAuthenticated()) {
             finishWithSuccess()

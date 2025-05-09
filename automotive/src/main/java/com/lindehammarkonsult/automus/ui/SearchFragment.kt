@@ -3,12 +3,13 @@ package com.lindehammarkonsult.automus.ui
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import androidx.appcompat.widget.SearchView
+import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -92,7 +93,7 @@ class SearchFragment : Fragment() {
             handleMediaItemClick(mediaItem)
         }
         
-        binding.searchResultsRecyclerView.apply {
+        binding.searchResultsList.apply {
             adapter = mediaAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
@@ -102,17 +103,17 @@ class SearchFragment : Fragment() {
     private fun setupObservers() {
         // Observe loading state
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.progressIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
         
         // Observe search results
         viewModel.searchResults.observe(viewLifecycleOwner) { results ->
             if (results.isNullOrEmpty()) {
                 binding.noResultsText.visibility = View.VISIBLE
-                binding.searchResultsRecyclerView.visibility = View.GONE
+                binding.searchResultsList.visibility = View.GONE
             } else {
                 binding.noResultsText.visibility = View.GONE
-                binding.searchResultsRecyclerView.visibility = View.VISIBLE
+                binding.searchResultsList.visibility = View.VISIBLE
                 mediaAdapter.submitList(results)
             }
         }
@@ -173,7 +174,7 @@ class SearchFragment : Fragment() {
         browsable: Boolean = false,
         playable: Boolean = true
     ): MediaBrowserCompat.MediaItem {
-        val description = MediaBrowserCompat.MediaDescriptionCompat.Builder()
+        val description = MediaDescriptionCompat.Builder()
             .setMediaId(mediaId)
             .setTitle(title)
             .setSubtitle(subtitle)

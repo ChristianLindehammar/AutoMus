@@ -106,25 +106,30 @@ class BrowseFragment : Fragment() {
             "GET_CHILDREN",
             Bundle().apply {
                 putString("parent_id", parentMediaId)
-            },
-            object : MediaBrowserCompat.CustomActionCallback() {
-                override fun onResult(action: String?, extras: Bundle?, resultData: Bundle?) {
-                    val mediaItems = resultData?.getParcelableArrayList<MediaBrowserCompat.MediaItem>("media_items")
-                    if (mediaItems != null) {
-                        viewModel.setMediaItems(mediaItems)
-                    } else {
-                        viewModel.setMediaItems(emptyList())
-                    }
-                    viewModel.setLoading(false)
-                }
-
-                override fun onError(action: String?, extras: Bundle?, data: Bundle?) {
-                    viewModel.setMediaItems(emptyList())
-                    viewModel.setLoading(false)
-                    showEmptyState(true)
-                }
             }
         )
+        
+        // Register a callback for results using MediaController
+        mediaBrowser?.registerCallback(object : MediaControllerCompat.Callback() {
+            override fun onSessionEvent(event: String?, extras: Bundle?) {
+                super.onSessionEvent(event, extras)
+                if (event == "CHILDREN_LOADED") {
+                    extras?.let { bundle ->
+                        val parentId = bundle.getString("parent_id")
+                        if (parentId == parentMediaId) {
+                            val mediaItems = bundle.getParcelableArrayList<MediaBrowserCompat.MediaItem>("media_items")
+                            if (mediaItems != null) {
+                                viewModel.setMediaItems(mediaItems)
+                            } else {
+                                viewModel.setMediaItems(emptyList())
+                            }
+                            viewModel.setLoading(false)
+                            mediaBrowser.unregisterCallback(this)
+                        }
+                    }
+                }
+            }
+        })
     }
     
     private fun onMediaItemClicked(mediaItem: MediaBrowserCompat.MediaItem) {
@@ -159,7 +164,7 @@ class BrowseFragment : Fragment() {
         
         fragment?.let {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, it)
+                .replace(R.id.fragmentContainer, it)
                 .addToBackStack(null)
                 .commit()
         }

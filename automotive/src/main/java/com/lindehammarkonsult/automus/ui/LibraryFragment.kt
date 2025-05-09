@@ -3,6 +3,7 @@ package com.lindehammarkonsult.automus.ui
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.view.LayoutInflater
 import android.view.View
@@ -141,7 +142,7 @@ class LibraryFragment : Fragment() {
         browsable: Boolean = true,
         playable: Boolean = false
     ): MediaBrowserCompat.MediaItem {
-        val description = MediaBrowserCompat.MediaDescriptionCompat.Builder()
+        val description = MediaDescriptionCompat.Builder()
             .setMediaId(mediaId)
             .setTitle(title)
             .setSubtitle(subtitle)
