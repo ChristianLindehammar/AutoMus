@@ -6,39 +6,13 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/library_tabs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:tabMode="fixed"
-        app:tabGravity="fill"
-        app:tabIndicatorColor="@color/apple_red"
-        app:tabSelectedTextColor="@color/apple_red"
-        app:tabTextColor="@color/text_secondary_light"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Library" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Browse" />
-            
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Search" />
-    </com.google.android.material.tabs.TabLayout>
-
+    <!-- Removed TabLayout that was duplicating the main navigation -->
+    
     <androidx.core.widget.NestedScrollView
         android:id="@+id/content_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/library_tabs"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">

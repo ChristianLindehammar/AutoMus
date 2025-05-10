@@ -58,29 +58,7 @@ class LibraryFragment : Fragment() {
         
         viewModel = ViewModelProvider(requireActivity())[MusicViewModel::class.java]
         
-        // Setup tabs navigation
-        binding.libraryTabs.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
-                when (tab?.position) {
-                    0 -> { /* Already in Library, do nothing */ }
-                    1 -> {
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.fragmentContainer, BrowseFragment())
-                            .commit()
-                        (activity as? MainActivity)?.updateSelectedNavigationItem(R.id.nav_browse)
-                    }
-                    2 -> {
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.fragmentContainer, SearchFragment())
-                            .commit()
-                        (activity as? MainActivity)?.updateSelectedNavigationItem(R.id.nav_search)
-                    }
-                }
-            }
-
-            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) { }
-            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) { }
-        })
+        // Let activity handle the top navigation
         
         setupRecyclerViews() // Renamed from setupRecyclerView
         setupObservers()

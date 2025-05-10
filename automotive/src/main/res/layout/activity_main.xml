@@ -58,12 +58,32 @@
                 android:src="@drawable/ic_person" />
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
+    
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/topNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:tabGravity="center"
+        app:tabMode="fixed"
+        app:tabIndicator="@drawable/tab_indicator"
+        app:tabIndicatorFullWidth="false"
+        app:tabSelectedTextColor="@color/apple_music_red"
+        app:tabTextColor="@color/black"
+        app:tabTextAppearance="@style/AppleMusicTabTextAppearance"
+        app:tabRippleColor="@android:color/transparent"
+        app:tabPaddingStart="16dp"
+        app:tabPaddingEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+        <!-- Tabs will be added programmatically in MainActivity -->
+    </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintTop_toBottomOf="@+id/topNavigation"
         app:layout_constraintBottom_toTopOf="@+id/miniPlayer" />
 
     <include
@@ -72,14 +92,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottom_navigation_menu" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

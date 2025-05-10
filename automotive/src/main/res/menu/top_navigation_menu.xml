@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This is just for reference, as the tabs are now hardcoded in the layout -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_library"
+        android:icon="@drawable/ic_library"
+        android:title="Library" />
+    <item
+        android:id="@+id/nav_browse"
+        android:icon="@drawable/ic_browse"
+        android:title="Browse" />
+    <item
+        android:id="@+id/nav_search"
+        android:icon="@drawable/ic_search"
+        android:title="Search" />
+</menu>

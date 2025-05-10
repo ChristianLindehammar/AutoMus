@@ -6,33 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/search_tabs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:tabMode="fixed"
-        app:tabGravity="fill"
-        app:tabIndicatorColor="@color/apple_red"
-        app:tabSelectedTextColor="@color/apple_red"
-        app:tabTextColor="@color/text_secondary_light"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Library" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Browse" />
-            
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Search" />
-    </com.google.android.material.tabs.TabLayout>
+    <!-- Removed TabLayout that was duplicating the main navigation -->
 
     <androidx.cardview.widget.CardView
         android:id="@+id/search_container"
@@ -45,7 +19,7 @@
         app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_tabs">
+        app:layout_constraintTop_toTopOf="parent">
 
         <SearchView
             android:id="@+id/search_view"

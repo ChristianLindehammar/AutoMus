@@ -45,4 +45,11 @@
         <item name="itemTextColor">@color/apple_red</item>
         <item name="backgroundTint">@color/white</item>
     </style>
+    
+    <style name="AppleMusicTabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
 </resources>

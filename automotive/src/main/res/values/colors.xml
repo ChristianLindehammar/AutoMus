@@ -8,6 +8,7 @@
     <!-- Apple Music theme colors -->
     <color name="apple_red">#FF2D55</color>
     <color name="apple_pink">#FF375F</color>
+    <color name="apple_music_red">#FF2D55</color>
     <color name="primary">#FF2D55</color>
     <color name="primary_variant">#E6264D</color>
     <color name="secondary">#007AFF</color>

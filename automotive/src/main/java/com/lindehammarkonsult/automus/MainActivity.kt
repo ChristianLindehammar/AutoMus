@@ -98,8 +98,8 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         // Initialize ViewModel
         viewModel = ViewModelProvider(this)[MusicViewModel::class.java]
         
-        // Set up bottom navigation
-        setupBottomNavigation()
+        // Set up top navigation
+        setupTopNavigation()
         
         // Set up media browser connection
         mediaBrowser = MediaBrowserCompat(
@@ -127,29 +127,45 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         super.onStop()
     }
     
-    private fun setupBottomNavigation() {
+    private fun setupTopNavigation() {
         // Default fragment
         if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) == null) {
             loadFragment(LibraryFragment())
         }
         
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_library -> {
-                    loadFragment(LibraryFragment())
-                    true
-                }
-                R.id.nav_browse -> {
-                    loadFragment(BrowseFragment())
-                    true
-                }
-                R.id.nav_search -> {
-                    loadFragment(SearchFragment())
-                    true
-                }
-                else -> false
-            }
+        // Create tabs programmatically
+        binding.topNavigation.apply {
+            // Remove any existing tabs first
+            removeAllTabs()
+            
+            // Add Library tab
+            addTab(newTab().setText("LIBRARY").setTag("nav_library"))
+            
+            // Add Browse tab
+            addTab(newTab().setText("BROWSE").setTag("nav_browse"))
+            
+            // Add Search tab
+            addTab(newTab().setText("SEARCH").setTag("nav_search"))
         }
+        
+        // Set up top navigation with tab layout
+        binding.topNavigation.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                when (tab?.position) {
+                    0 -> loadFragment(LibraryFragment())
+                    1 -> loadFragment(BrowseFragment())
+                    2 -> loadFragment(SearchFragment())
+                }
+            }
+            
+            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                // No action needed
+            }
+            
+            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                // Optionally refresh the selected fragment
+            }
+        })
         
         // Set up toolbar buttons
         binding.settingsButton.setOnClickListener {
@@ -230,14 +246,30 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             
             // Show mini player since we have active media
             showMiniPlayer()
+            
+            // Ensure fragment container is constrained to the mini player
+            val params = binding.fragmentContainer.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+            params.bottomToTop = binding.miniPlayer.root.id
+            binding.fragmentContainer.layoutParams = params
         }
     }
     
     /**
-     * Updates the selected item in the bottom navigation.
+     * Updates the selected tab in the top navigation.
      * This method is used by fragments to update the navigation UI.
      */
     fun updateSelectedNavigationItem(itemId: Int) {
-        binding.bottomNavigation.selectedItemId = itemId
+        // Convert itemId to tab position
+        val tabPosition = when (itemId) {
+            R.id.nav_library -> 0
+            R.id.nav_browse -> 1
+            R.id.nav_search -> 2
+            else -> 0 // Default to library
+        }
+        
+        // Make sure we're selecting a valid tab position
+        if (tabPosition >= 0 && tabPosition < binding.topNavigation.tabCount) {
+            binding.topNavigation.getTabAt(tabPosition)?.select()
+        }
     }
 }
