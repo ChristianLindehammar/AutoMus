@@ -70,6 +70,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="@color/white"
         app:layout_constraintTop_toBottomOf="@+id/toolbar">
         
         <HorizontalScrollView
@@ -77,12 +78,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            android:paddingVertical="@dimen/nav_container_padding"
-            android:paddingHorizontal="@dimen/nav_button_margin"
+            android:paddingTop="14dp"
+            android:paddingBottom="12dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
             android:scrollbars="none"
             android:fillViewport="false"
             android:clipToPadding="false"
-            android:elevation="2dp">
+            android:elevation="0dp">
             
             <LinearLayout
                 android:id="@+id/topNavigation"

@@ -183,12 +183,13 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
                 }
             }
             
-            // Add to the layout with some margin
+            // Add to the layout with proper spacing matching the design
             val layoutParams = android.widget.LinearLayout.LayoutParams(
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
                 marginEnd = resources.getDimensionPixelSize(R.dimen.nav_button_margin)
+                gravity = android.view.Gravity.CENTER_VERTICAL
             }
             binding.topNavigation.addView(button, layoutParams)
         }
@@ -307,6 +308,8 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             if (shouldBeSelected && !navButton.isSelected) {
                 // Apply scale-up animation when selecting
                 navButton.isSelected = true
+                navButton.elevation = resources.getDimension(R.dimen.nav_button_elevation)
+                navButton.translationZ = 1f
                 android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_up).apply {
                     setTarget(navButton)
                     start()
@@ -314,6 +317,8 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             } else if (!shouldBeSelected && navButton.isSelected) {
                 // Apply scale-down animation when deselecting
                 navButton.isSelected = false
+                navButton.elevation = 0f
+                navButton.translationZ = 0f
                 android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_down).apply {
                     setTarget(navButton)
                     start()
@@ -323,30 +328,34 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     }
     
     /**
-     * Creates a pill-shaped navigation button like in Apple Music design
+     * Creates a pill-shaped navigation button matching Apple Music design
      */
     private fun createNavigationButton(text: String, isSelected: Boolean = false): android.widget.Button {
         return android.widget.Button(this).apply {
             this.text = text
-            textSize = 15f
+            textSize = resources.getDimension(R.dimen.nav_button_text_size) / resources.displayMetrics.density
             isAllCaps = false
+            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
             
             // Remove default button styling
             stateListAnimator = null
-            elevation = 0f
             
-            // Set the background drawable
+            // Set elevation only for selected state (in XML it's handled via layer-list)
+            elevation = if (isSelected) resources.getDimension(R.dimen.nav_button_elevation) else 0f
+            translationZ = if (isSelected) 1f else 0f
+            
+            // Set the background drawable 
             background = getDrawable(R.drawable.nav_button_background)
             
             // Set the text color using selector for smooth state transitions
             setTextColor(resources.getColorStateList(R.color.nav_button_text_color, theme))
             
-            // Set padding
+            // Set padding to match design
             setPadding(
                 resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal),
-                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical) / 2,
+                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical),
                 resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal),
-                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical) / 2
+                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical)
             )
             
             // Set minimum width to zero to prevent default button width
