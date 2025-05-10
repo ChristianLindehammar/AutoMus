@@ -7,6 +7,8 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -133,39 +135,66 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             loadFragment(LibraryFragment())
         }
         
-        // Create tabs programmatically
-        binding.topNavigation.apply {
-            // Remove any existing tabs first
-            removeAllTabs()
-            
-            // Add Library tab
-            addTab(newTab().setText("LIBRARY").setTag("nav_library"))
-            
-            // Add Browse tab
-            addTab(newTab().setText("BROWSE").setTag("nav_browse"))
-            
-            // Add Search tab
-            addTab(newTab().setText("SEARCH").setTag("nav_search"))
-        }
+        // Clear existing navigation buttons
+        binding.topNavigation.removeAllViews()
         
-        // Set up top navigation with tab layout
-        binding.topNavigation.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
-                when (tab?.position) {
-                    0 -> loadFragment(LibraryFragment())
-                    1 -> loadFragment(BrowseFragment())
-                    2 -> loadFragment(SearchFragment())
+        // Add navigation buttons programmatically
+        val navItems = listOf(
+            Triple(R.id.nav_library, "Library", LibraryFragment::class.java),
+            Triple(R.id.nav_browse, "Browse", BrowseFragment::class.java),
+            Triple(R.id.nav_search, "Search", SearchFragment::class.java)
+        )
+        
+        // Create each pill-shaped button and add to the LinearLayout
+        navItems.forEachIndexed { index, (id, title, fragmentClass) ->
+            val button = createNavigationButton(title, index == 0)
+            button.id = id
+            
+            // Set click listener
+            button.setOnClickListener {
+                // Update button states with animation
+                for (i in 0 until binding.topNavigation.childCount) {
+                    val navButton = binding.topNavigation.getChildAt(i)
+                    val shouldBeSelected = (i == index)
+                    
+                    if (shouldBeSelected && !navButton.isSelected) {
+                        // Apply scale-up animation when selecting
+                        navButton.isSelected = true
+                        android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_up).apply {
+                            setTarget(navButton)
+                            start()
+                        }
+                    } else if (!shouldBeSelected && navButton.isSelected) {
+                        // Apply scale-down animation when deselecting
+                        navButton.isSelected = false
+                        android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_down).apply {
+                            setTarget(navButton)
+                            start()
+                        }
+                    }
+                }
+                
+                // Load the fragment
+                try {
+                    val fragment = fragmentClass.getDeclaredConstructor().newInstance() as Fragment
+                    loadFragment(fragment)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error creating fragment", e)
                 }
             }
             
-            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
-                // No action needed
+            // Add to the layout with some margin
+            val layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = resources.getDimensionPixelSize(R.dimen.nav_button_margin)
             }
-            
-            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
-                // Optionally refresh the selected fragment
-            }
-        })
+            binding.topNavigation.addView(button, layoutParams)
+        }
+        
+        // Select the first button by default
+        binding.topNavigation.getChildAt(0).isSelected = true
         
         // Set up toolbar buttons
         binding.settingsButton.setOnClickListener {
@@ -175,10 +204,21 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         binding.profileButton.setOnClickListener {
             // TODO: Implement user profile or sign in dialog
         }
+        
+        // Make the Apple logo function as a home button
+        findViewById<ImageView>(R.id.apple_music_logo).setOnClickListener {
+            // Navigate to library screen and select the library tab
+            loadFragment(LibraryFragment())
+            updateSelectedNavigationItem(R.id.nav_library)
+        }
     }
     
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                R.anim.fade_slide_in,
+                R.anim.fade_slide_out
+            )
             .replace(R.id.fragmentContainer, fragment)
             .commit()
     }
@@ -255,21 +295,66 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     }
     
     /**
-     * Updates the selected tab in the top navigation.
+     * Updates the selected button in the top navigation.
      * This method is used by fragments to update the navigation UI.
      */
     fun updateSelectedNavigationItem(itemId: Int) {
-        // Convert itemId to tab position
-        val tabPosition = when (itemId) {
-            R.id.nav_library -> 0
-            R.id.nav_browse -> 1
-            R.id.nav_search -> 2
-            else -> 0 // Default to library
+        // Find the button with the given ID and select it with animation
+        for (i in 0 until binding.topNavigation.childCount) {
+            val navButton = binding.topNavigation.getChildAt(i)
+            val shouldBeSelected = (navButton.id == itemId)
+            
+            if (shouldBeSelected && !navButton.isSelected) {
+                // Apply scale-up animation when selecting
+                navButton.isSelected = true
+                android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_up).apply {
+                    setTarget(navButton)
+                    start()
+                }
+            } else if (!shouldBeSelected && navButton.isSelected) {
+                // Apply scale-down animation when deselecting
+                navButton.isSelected = false
+                android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_down).apply {
+                    setTarget(navButton)
+                    start()
+                }
+            }
         }
-        
-        // Make sure we're selecting a valid tab position
-        if (tabPosition >= 0 && tabPosition < binding.topNavigation.tabCount) {
-            binding.topNavigation.getTabAt(tabPosition)?.select()
+    }
+    
+    /**
+     * Creates a pill-shaped navigation button like in Apple Music design
+     */
+    private fun createNavigationButton(text: String, isSelected: Boolean = false): android.widget.Button {
+        return android.widget.Button(this).apply {
+            this.text = text
+            textSize = 15f
+            isAllCaps = false
+            
+            // Remove default button styling
+            stateListAnimator = null
+            elevation = 0f
+            
+            // Set the background drawable
+            background = getDrawable(R.drawable.nav_button_background)
+            
+            // Set the text color using selector for smooth state transitions
+            setTextColor(resources.getColorStateList(R.color.nav_button_text_color, theme))
+            
+            // Set padding
+            setPadding(
+                resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal),
+                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical) / 2,
+                resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal),
+                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical) / 2
+            )
+            
+            // Set minimum width to zero to prevent default button width
+            minimumWidth = 0
+            minimumHeight = resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical) * 2
+            
+            // Set initially selected state
+            this.isSelected = isSelected
         }
     }
 }
