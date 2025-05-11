@@ -13,7 +13,7 @@
     <color name="primary_variant">#E6264D</color>
     <color name="secondary">#007AFF</color>
     <color name="secondary_variant">#0066D6</color>
-    <color name="background_light">#F8F8FA</color>
+    <color name="background_light">#F5F5F7</color> <!-- Updated background color for app screens -->
     <color name="surface_light">#FFFFFF</color>
     <color name="on_surface_light">#212121</color>
     <color name="text_primary_light">#000000</color>

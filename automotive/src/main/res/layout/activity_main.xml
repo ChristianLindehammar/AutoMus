@@ -83,33 +83,27 @@
             android:id="@+id/topNavigationContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:paddingTop="14dp"
-            android:paddingBottom="12dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:scrollbars="none"
-            android:fillViewport="false"
+            android:background="@color/background_light"
             android:clipToPadding="false"
-            android:elevation="0dp">
-            
+            android:elevation="0dp"
+            android:fillViewport="false"
+            android:paddingStart="16dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
+            android:scrollbars="none">
+
             <LinearLayout
                 android:id="@+id/topNavigation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-                
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
                 <!-- Pill-shaped buttons will be added programmatically in MainActivity -->
-                
+
             </LinearLayout>
         </HorizontalScrollView>
-        
-        <View
-            android:id="@+id/navigation_shadow"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:background="@drawable/navbar_shadow" />
     </LinearLayout>
 
     <FrameLayout
