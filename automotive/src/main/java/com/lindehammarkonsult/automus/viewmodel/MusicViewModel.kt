@@ -1,6 +1,7 @@
 package com.lindehammarkonsult.automus.viewmodel
 
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.LiveData
@@ -68,34 +69,107 @@ class MusicViewModel : ViewModel() {
         _isLoading.value = loading
     }
 
-    // Methods to fetch library data (simulated)
+    // Methods to fetch library data (simulated with mock data)
     fun fetchPlaylists() {
-        // In a real app, this would subscribe to a media ID via MediaBrowser
-        _playlists.postValue(emptyList()) // Simulate clearing old data / initial empty state
-        // Data would be populated by MediaBrowserCompat.SubscriptionCallback
+        // Create mock playlist data to match the design
+        val playlists = mutableListOf<MediaBrowserCompat.MediaItem>()
+        
+        // My Favorites playlist
+        val favoritesDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("playlist_favorites")
+            .setTitle("My Favorites")
+            .setSubtitle("324 songs")
+            .build()
+        playlists.add(MediaBrowserCompat.MediaItem(favoritesDescription, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE))
+        
+        // Driving Mix playlist
+        val drivingDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("playlist_driving")
+            .setTitle("Driving Mix")
+            .setSubtitle("156 songs")
+            .build()
+        playlists.add(MediaBrowserCompat.MediaItem(drivingDescription, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE))
+        
+        // Workout Beats playlist
+        val workoutDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("playlist_workout")
+            .setTitle("Workout Beats")
+            .setSubtitle("89 songs")
+            .build()
+        playlists.add(MediaBrowserCompat.MediaItem(workoutDescription, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE))
+        
+        _playlists.postValue(playlists)
     }
 
     fun fetchLikedSongs() {
-        _likedSongs.postValue(emptyList())
+        // Create mock liked songs data to match the design
+        val likedSongs = mutableListOf<MediaBrowserCompat.MediaItem>()
+        
+        // Blinding Lights by The Weeknd
+        val blindingLightsDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("song_blinding_lights")
+            .setTitle("Blinding Lights")
+            .setSubtitle("The Weeknd")
+            .build()
+        likedSongs.add(MediaBrowserCompat.MediaItem(blindingLightsDescription, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE))
+        
+        // Stay by Kid Laroi & Justin Bieber
+        val stayDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("song_stay")
+            .setTitle("Stay")
+            .setSubtitle("Kid Laroi & Justin Bieber")
+            .build()
+        likedSongs.add(MediaBrowserCompat.MediaItem(stayDescription, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE))
+        
+        // As It Was by Harry Styles
+        val asItWasDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("song_as_it_was")
+            .setTitle("As It Was")
+            .setSubtitle("Harry Styles")
+            .build()
+        likedSongs.add(MediaBrowserCompat.MediaItem(asItWasDescription, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE))
+        
+        _likedSongs.postValue(likedSongs)
     }
 
     fun fetchRecentlyPlayedItems() {
-        _recentlyPlayedItems.postValue(emptyList())
+        // Create mock recently played items to match the design
+        val recentlyPlayed = mutableListOf<MediaBrowserCompat.MediaItem>()
+        
+        // Starboy by The Weeknd
+        val starboyDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("album_starboy")
+            .setTitle("Starboy")
+            .setSubtitle("Album • The Weeknd")
+            .build()
+        recentlyPlayed.add(MediaBrowserCompat.MediaItem(starboyDescription, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE))
+        
+        // Future Nostalgia by Dua Lipa
+        val futureNostalgiaDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("album_future_nostalgia")
+            .setTitle("Future Nostalgia")
+            .setSubtitle("Album • Dua Lipa")
+            .build()
+        recentlyPlayed.add(MediaBrowserCompat.MediaItem(futureNostalgiaDescription, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE))
+        
+        // Positions by Ariana Grande
+        val positionsDescription = MediaDescriptionCompat.Builder()
+            .setMediaId("album_positions")
+            .setTitle("Positions")
+            .setSubtitle("Album • Ariana Grande")
+            .build()
+        recentlyPlayed.add(MediaBrowserCompat.MediaItem(positionsDescription, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE))
+        
+        _recentlyPlayedItems.postValue(recentlyPlayed)
     }
 
     fun fetchAllLibraryData() {
         setLoading(true)
-        // Simulate fetching all sections. In a real scenario, these might be
-        // individual subscriptions or one larger subscription whose results are categorized.
+        // Load mock data for all sections
         fetchPlaylists()
         fetchLikedSongs()
         fetchRecentlyPlayedItems()
-        // In a real app, setLoading(false) would be called when all data is loaded
-        // or after each section if they load independently and update isLoading accordingly.
-        // For this simulation, we'll assume they are quick or managed by individual observers.
-        // For simplicity in this step, we'll set loading to false after initiating.
-        // A more robust solution would involve callbacks or observing multiple load states.
-        setLoading(false) // Simplified for now
+        setLoading(false)
     }
 
     // Updated method to handle liking/unliking songs

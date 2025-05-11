@@ -120,7 +120,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:gravity="center"
-        android:text="Sign in to access your Apple Music library"
+        android:text="No library content found"
         android:textAppearance="?attr/textAppearanceBody1"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

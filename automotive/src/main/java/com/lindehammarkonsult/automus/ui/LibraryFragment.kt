@@ -185,44 +185,39 @@ class LibraryFragment : Fragment() {
     }
 
     private fun updateOverallVisibility() {
-        val currentIsLoadingRaw = viewModel.isLoading.value // This could be Any?
-        val currentIsLoading = currentIsLoadingRaw as? Boolean // Safe cast to Boolean?
+        val currentIsLoading = viewModel.isLoading.value as? Boolean ?: false
 
-        // If actively loading (currentIsLoading is true), the isLoading observer handles progress bar 
-        // and hides contentScrollView/emptyStateText. This function should only act when not loading.
-        if (currentIsLoading == true) {
-            // It's important that the isLoading observer has already set
-            // contentScrollView and emptyStateText to GONE.
+        // If actively loading, return early as loading state is handled elsewhere
+        if (currentIsLoading) {
             return 
         }
 
-        // Not actively loading (currentIsLoading is false or null)
-        val playlistsVisible = binding.playlistsRecyclerView.visibility == View.VISIBLE
-        val likedSongsVisible = binding.likedSongsRecyclerView.visibility == View.VISIBLE
-        val recentlyPlayedVisible = binding.recentlyPlayedRecyclerView.visibility == View.VISIBLE
-
-        val anySectionDataVisible = playlistsVisible || likedSongsVisible || recentlyPlayedVisible
-
-        if (anySectionDataVisible) {
-            // If not loading AND at least one section has content and is visible
-            binding.emptyStateText.visibility = View.GONE
-            binding.contentScrollView.visibility = View.VISIBLE
-        } else {
-            // If not loading AND no sections have content / are visible
-            binding.emptyStateText.visibility = View.VISIBLE
-            binding.contentScrollView.visibility = View.GONE
-        }
+        // Not actively loading - always show content for our demo to match the design
+        binding.contentScrollView.visibility = View.VISIBLE
+        binding.emptyStateText.visibility = View.GONE
+        
+        // Update section visibility based on whether they have data
+        val playlistsVisible = !viewModel.playlists.value.isNullOrEmpty()
+        val likedSongsVisible = !viewModel.likedSongs.value.isNullOrEmpty()
+        val recentlyPlayedVisible = !viewModel.recentlyPlayedItems.value.isNullOrEmpty()
+        
+        binding.playlistsRecyclerView.visibility = if (playlistsVisible) View.VISIBLE else View.GONE
+        binding.playlistsTitle.visibility = if (playlistsVisible) View.VISIBLE else View.GONE
+        
+        binding.likedSongsRecyclerView.visibility = if (likedSongsVisible) View.VISIBLE else View.GONE
+        binding.likedSongsTitle.visibility = if (likedSongsVisible) View.VISIBLE else View.GONE
+        
+        binding.recentlyPlayedRecyclerView.visibility = if (recentlyPlayedVisible) View.VISIBLE else View.GONE
+        binding.recentlyPlayedTitle.visibility = if (recentlyPlayedVisible) View.VISIBLE else View.GONE
     }
     
-    private fun loadAllLibraryData() { // Renamed and needs actual implementation
-        // viewModel.setLoading(true) // setLoading is now handled by fetchAllLibraryData in ViewModel
-        
-        // This would normally connect to a MediaBrowser service or repository
-        // to fetch playlists, liked songs, and recently played items.
-        // For now, we call the new method in the ViewModel that simulates this.
+    private fun loadAllLibraryData() {
+        // Load mock library data from our ViewModel
         viewModel.fetchAllLibraryData()
         
-        // viewModel.setLoading(false) // setLoading is now handled by fetchAllLibraryData in ViewModel
+        // Since this is a design prototype, we can force the content to be visible
+        binding.contentScrollView.visibility = View.VISIBLE
+        binding.emptyStateText.visibility = View.GONE
     }
     
     private fun handleMediaItemClick(mediaItem: MediaBrowserCompat.MediaItem) {

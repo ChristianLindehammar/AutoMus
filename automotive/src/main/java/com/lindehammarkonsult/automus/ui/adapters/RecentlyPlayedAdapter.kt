@@ -43,11 +43,9 @@ class RecentlyPlayedAdapter(
         fun bind(mediaItem: MediaBrowserCompat.MediaItem) {
             binding.albumTitle.text = mediaItem.description.title
             binding.albumArtist.text = mediaItem.description.subtitle 
-            // Assuming you have a placeholder, replace R.drawable.album_art_placeholder
-            // Glide.with(binding.albumCoverImage.context)
-            //     .load(mediaItem.description.iconUri) 
-            //     .placeholder(R.drawable.album_art_placeholder) // Replace with your placeholder
-            //     .into(binding.albumCoverImage)
+            
+            // For now, we'll just use placeholder images as we don't have real album art
+            binding.albumCoverImage.setImageResource(R.drawable.album_art_placeholder)
             
             // For now, using a static placeholder if Glide is not set up
             // or if iconUri is null
