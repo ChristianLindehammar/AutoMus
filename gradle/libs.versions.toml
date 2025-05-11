@@ -4,6 +4,7 @@ app = "1.4.0"
 browser = "1.8.0"
 coreKtxVersion = "1.16.0"
 desugar_jdk_libs = "2.1.5"
+flexbox = "3.0.0"
 kotlin = "1.9.24"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -44,6 +45,7 @@ androidx-security-crypto-v100 = { module = "androidx.security:security-crypto", 
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 extension-cast = { module = "com.google.android.exoplayer:extension-cast", version.ref = "exoplayer" }
 extension-mediasession = { module = "com.google.android.exoplayer:extension-mediasession", version.ref = "exoplayer" }
+flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

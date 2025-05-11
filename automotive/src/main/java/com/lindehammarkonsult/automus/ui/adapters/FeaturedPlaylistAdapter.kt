@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.lindehammarkonsult.automus.R
-import com.lindehammarkonsult.automus.databinding.ItemFeaturedPlaylistBinding
+import com.lindehammarkonsult.automus.databinding.ItemFeaturedPlaylistNewBinding
 import com.lindehammarkonsult.automus.model.FeaturedPlaylist
 
 class FeaturedPlaylistAdapter(
@@ -15,7 +15,7 @@ class FeaturedPlaylistAdapter(
 ) : ListAdapter<FeaturedPlaylist, FeaturedPlaylistAdapter.PlaylistViewHolder>(PlaylistDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaylistViewHolder {
-        val binding = ItemFeaturedPlaylistBinding.inflate(
+        val binding = ItemFeaturedPlaylistNewBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -28,7 +28,7 @@ class FeaturedPlaylistAdapter(
     }
 
     inner class PlaylistViewHolder(
-        private val binding: ItemFeaturedPlaylistBinding
+        private val binding: ItemFeaturedPlaylistNewBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         init {
@@ -48,7 +48,7 @@ class FeaturedPlaylistAdapter(
             Glide.with(binding.root.context)
                 .load(playlist.coverArtUrl)
                 .placeholder(R.drawable.album_art_placeholder)
-                .into(binding.playlistCoverImage)
+                .into(binding.playlistImage)
         }
     }
 

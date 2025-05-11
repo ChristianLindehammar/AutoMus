@@ -1,24 +1,18 @@
 package com.lindehammarkonsult.automus.ui
 
 import android.os.Bundle
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.session.MediaControllerCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.flexbox.FlexboxLayoutManager
 import com.lindehammarkonsult.automus.R
 import com.lindehammarkonsult.automus.databinding.FragmentBrowseBinding
 import com.lindehammarkonsult.automus.model.FeaturedPlaylist
-import com.lindehammarkonsult.automus.model.GenreCategory
 import com.lindehammarkonsult.automus.ui.adapters.FeaturedPlaylistAdapter
-import com.lindehammarkonsult.automus.ui.adapters.GenreCategoryAdapter
-import com.lindehammarkonsult.automus.ui.adapters.LikedSongsAdapter
-import com.lindehammarkonsult.automus.ui.adapters.RecentlyPlayedAdapter
-import com.lindehammarkonsult.automus.ui.adapters.PlaylistAdapter
+import com.lindehammarkonsult.automus.ui.adapters.GenrePillAdapter
 import com.lindehammarkonsult.automus.viewmodel.MusicViewModel
 
 /**
@@ -30,9 +24,8 @@ class BrowseFragment : Fragment() {
     private val binding get() = _binding!!
     
     private lateinit var viewModel: MusicViewModel
-    private lateinit var playlistAdapter: PlaylistAdapter
-    private lateinit var likedSongsAdapter: LikedSongsAdapter
-    private lateinit var recentlyPlayedAdapter: RecentlyPlayedAdapter
+    private lateinit var featuredPlaylistAdapter: FeaturedPlaylistAdapter
+    private lateinit var genrePillAdapter: GenrePillAdapter
     private var browseMediaId: String? = null // To store the mediaId
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,41 +69,24 @@ class BrowseFragment : Fragment() {
     }
     
     private fun setupRecyclerViews() {
-        // Playlists adapter and recycler view
-        playlistAdapter = PlaylistAdapter { mediaItem ->
-            handleMediaItemClick(mediaItem)
+        // Featured playlists adapter and recycler view
+        featuredPlaylistAdapter = FeaturedPlaylistAdapter { playlist ->
+            onFeaturedPlaylistClicked(playlist)
         }
         
-        binding.playlistsRecyclerView.apply {
-            adapter = playlistAdapter
+        binding.featuredPlaylistsRecyclerView.apply {
+            adapter = featuredPlaylistAdapter
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         }
         
-        // Liked Songs adapter and recycler view
-        likedSongsAdapter = LikedSongsAdapter(
-            onItemClick = { mediaItem ->
-                handleMediaItemClick(mediaItem)
-            },
-            onLikeClick = { mediaItem ->
-                // Handle like/unlike action
-                // For now, just log or show a toast that it was clicked
-                // In a real implementation, you'd update the like status in your data source
-            }
-        )
-        
-        binding.likedSongsRecyclerView.apply {
-            adapter = likedSongsAdapter
-            layoutManager = LinearLayoutManager(requireContext())
+        // Genre Pills adapter and recycler view
+        genrePillAdapter = GenrePillAdapter { genrePill ->
+            onGenrePillClicked(genrePill)
         }
         
-        // Recently played adapter and recycler view
-        recentlyPlayedAdapter = RecentlyPlayedAdapter { mediaItem ->
-            handleMediaItemClick(mediaItem)
-        }
-        
-        binding.recentlyPlayedRecyclerView.apply {
-            adapter = recentlyPlayedAdapter
-            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.genrePillsRecyclerView.apply {
+            adapter = genrePillAdapter
+            layoutManager = FlexboxLayoutManager(requireContext())
         }
     }
     
@@ -130,9 +106,8 @@ class BrowseFragment : Fragment() {
     }
     
     private fun updateEmptyState() {
-        val hasContent = playlistAdapter.itemCount > 0 || 
-                         likedSongsAdapter.itemCount > 0 || 
-                         recentlyPlayedAdapter.itemCount > 0
+        val hasContent = featuredPlaylistAdapter.itemCount > 0 ||
+                         genrePillAdapter.itemCount > 0
                          
         val isLoading = viewModel.isLoading.value == true
         
@@ -158,152 +133,173 @@ class BrowseFragment : Fragment() {
         viewModel.setLoading(true)
         
         // Clear existing adapters
-        playlistAdapter.submitList(emptyList())
-        likedSongsAdapter.submitList(emptyList())
-        recentlyPlayedAdapter.submitList(emptyList())
+        featuredPlaylistAdapter.submitList(emptyList())
+        genrePillAdapter.submitList(emptyList())
         
         // TODO: Implement actual media browsing logic here
         // For now we'll show the empty state
         binding.emptyStateText.text = "Browsing content for $mediaId"
         viewModel.setLoading(false)
         updateEmptyState()
-
-        // Example: Trigger a load in ViewModel
-        // viewModel.browseByMediaId(mediaId)
-        // Then observe the results via LiveData
     }
     
     private fun loadBrowseContent() {
         viewModel.setLoading(true)
         
-        // Create sample playlists
-        val playlists = createSamplePlaylists()
-        playlistAdapter.submitList(playlists)
+        // Create featured playlists
+        val playlists = createFeaturedPlaylists()
+        featuredPlaylistAdapter.submitList(playlists)
         
-        // Create sample liked songs
-        val likedSongs = createSampleLikedSongs()
-        likedSongsAdapter.submitList(likedSongs)
-        
-        // Create sample recently played
-        val recentlyPlayed = createSampleRecentlyPlayed()
-        recentlyPlayedAdapter.submitList(recentlyPlayed)
+        // Create genre pills
+        val genrePills = createGenrePills()
+        genrePillAdapter.submitList(genrePills)
         
         viewModel.setLoading(false)
     }
 
-    private fun createSamplePlaylists(): List<MediaBrowserCompat.MediaItem> {
+    /* 
+     * Category cards have been moved to another fragment
+     * Keeping the method commented out for reference when implementing the new location
+     */
+    /*
+    private fun createCategoryCards(): List<CategoryCardAdapter.CategoryCard> {
         return listOf(
-            createMediaItem(
-                "playlist_1", 
-                "Electronic Mix", 
-                "Updated weekly",
-                true
+            CategoryCardAdapter.CategoryCard(
+                id = "liked_songs",
+                title = "Liked Songs",
+                subtitle = "Access your favorite tracks",
+                iconResId = R.drawable.ic_favorite,
+                mediaId = "media_liked_songs"
             ),
-            createMediaItem(
-                "playlist_2", 
-                "Pop Hits", 
-                "Top charts",
-                true
+            CategoryCardAdapter.CategoryCard(
+                id = "recently_played",
+                title = "Recently Played",
+                subtitle = "Continue where you left off",
+                iconResId = R.drawable.ic_history,
+                mediaId = "media_recently_played"
             ),
-            createMediaItem(
-                "playlist_3", 
-                "My Favorites", 
-                "Custom playlist",
-                true
+            CategoryCardAdapter.CategoryCard(
+                id = "downloads",
+                title = "Downloads",
+                subtitle = "Available offline",
+                iconResId = R.drawable.ic_download,
+                mediaId = "media_downloads"
             )
         )
     }
+    */
 
-    private fun createSampleLikedSongs(): List<MediaBrowserCompat.MediaItem> {
+    private fun createFeaturedPlaylists(): List<FeaturedPlaylist> {
         return listOf(
-            createMediaItem(
-                "song_1", 
-                "Blinding Lights", 
-                "The Weeknd",
-                false,
-                true
+            FeaturedPlaylist(
+                id = "playlist_1",
+                title = "Electronic Mix",
+                subtitle = "Updated weekly",
+                coverArtUrl = null,
+                mediaId = "playlist_electronic_mix"
             ),
-            createMediaItem(
-                "song_2", 
-                "Don't Start Now", 
-                "Dua Lipa",
-                false,
-                true
+            FeaturedPlaylist(
+                id = "playlist_2",
+                title = "Pop Hits",
+                subtitle = "Top charts",
+                coverArtUrl = null,
+                mediaId = "playlist_pop_hits"
             ),
-            createMediaItem(
-                "song_3", 
-                "Circles", 
-                "Post Malone",
-                false,
-                true
+            FeaturedPlaylist(
+                id = "playlist_3",
+                title = "Hip-Hop Essentials",
+                subtitle = "Fresh beats",
+                coverArtUrl = null,
+                mediaId = "playlist_hiphop_essentials"
+            ),
+            FeaturedPlaylist(
+                id = "playlist_4",
+                title = "Rock Classics",
+                subtitle = "All-time favorites",
+                coverArtUrl = null,
+                mediaId = "playlist_rock_classics"
             )
         )
     }
     
-    private fun createSampleRecentlyPlayed(): List<MediaBrowserCompat.MediaItem> {
+    private fun createGenrePills(): List<GenrePillAdapter.GenrePill> {
+        val context = requireContext()
         return listOf(
-            createMediaItem(
-                "album_1", 
-                "After Hours", 
-                "The Weeknd",
-                true
+            GenrePillAdapter.GenrePill(
+                id = "genre_1",
+                name = "Pop",
+                mediaId = "genre_pop",
+                color = context.getColor(android.R.color.holo_purple)
             ),
-            createMediaItem(
-                "album_2", 
-                "Future Nostalgia", 
-                "Dua Lipa",
-                true
+            GenrePillAdapter.GenrePill(
+                id = "genre_2",
+                name = "Rock",
+                mediaId = "genre_rock",
+                color = context.getColor(android.R.color.holo_blue_light)
             ),
-            createMediaItem(
-                "album_3", 
-                "Hollywood's Bleeding", 
-                "Post Malone",
-                true
+            GenrePillAdapter.GenrePill(
+                id = "genre_3",
+                name = "Hip-Hop",
+                mediaId = "genre_hiphop",
+                color = context.getColor(android.R.color.holo_green_light)
             ),
-            createMediaItem(
-                "album_4", 
-                "Fine Line", 
-                "Harry Styles",
-                true
+            GenrePillAdapter.GenrePill(
+                id = "genre_4",
+                name = "Electronic",
+                mediaId = "genre_electronic",
+                color = context.getColor(android.R.color.holo_red_light)
+            ),
+            GenrePillAdapter.GenrePill(
+                id = "genre_5",
+                name = "Jazz",
+                mediaId = "genre_jazz",
+                color = context.getColor(android.R.color.holo_orange_light)
+            ),
+            GenrePillAdapter.GenrePill(
+                id = "genre_6",
+                name = "Classical",
+                mediaId = "genre_classical",
+                color = context.getColor(android.R.color.holo_purple)
             )
         )
     }
     
-    private fun createMediaItem(
-        mediaId: String,
-        title: String,
-        subtitle: String,
-        browsable: Boolean = false,
-        playable: Boolean = false
-    ): MediaBrowserCompat.MediaItem {
-        val description = MediaDescriptionCompat.Builder()
-            .setMediaId(mediaId)
-            .setTitle(title)
-            .setSubtitle(subtitle)
-            .build()
-            
-        val flags = when {
-            browsable -> MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
-            playable -> MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-            else -> 0
+    /*
+     * Category cards click handling has been moved to another fragment
+     * Keeping the method commented out for reference when implementing the new location
+     */
+    /*
+    private fun handleCategoryCardClick(categoryCard: CategoryCardAdapter.CategoryCard) {
+        when (categoryCard.id) {
+            "liked_songs" -> {
+                // Navigate to liked songs screen or expand section
+            }
+            "recently_played" -> {
+                // Navigate to recently played screen or expand section
+            }
+            "downloads" -> {
+                // Navigate to downloads screen or expand section
+            }
         }
-        
-        return MediaBrowserCompat.MediaItem(description, flags)
+    }
+    */
+    
+    private fun onFeaturedPlaylistClicked(playlist: FeaturedPlaylist) {
+        // Navigate to playlist detail
+        val fragment = PlaylistDetailFragment.newInstance(playlist.mediaId)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
     
-    private fun handleMediaItemClick(mediaItem: MediaBrowserCompat.MediaItem) {
-        if (mediaItem.isPlayable) {
-            // Play the media
-            val mediaController = MediaControllerCompat.getMediaController(requireActivity())
-            mediaController?.transportControls?.playFromMediaId(mediaItem.mediaId, null)
-        } else if (mediaItem.isBrowsable) {
-            // Browse the item's children
-            val browseFragment = newInstance(mediaItem.mediaId)
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, browseFragment)
-                .addToBackStack(null)
-                .commit()
-        }
+    private fun onGenrePillClicked(genrePill: GenrePillAdapter.GenrePill) {
+        // Navigate to genre detail
+        val fragment = GenreDetailFragment.newInstance(genrePill.mediaId)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
     
     companion object {
