@@ -1,5 +1,7 @@
 package com.lindehammarkonsult.automus
 
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -7,9 +9,12 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.view.View
+import android.view.ViewOutlineProvider
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
@@ -302,23 +307,25 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     fun updateSelectedNavigationItem(itemId: Int) {
         // Find the button with the given ID and select it with animation
         for (i in 0 until binding.topNavigation.childCount) {
-            val navButton = binding.topNavigation.getChildAt(i)
+            val navButton = binding.topNavigation.getChildAt(i) as Button // Ensure it's a Button
             val shouldBeSelected = (navButton.id == itemId)
             
-            if (shouldBeSelected && !navButton.isSelected) {
-                // Apply scale-up animation when selecting
+            if (shouldBeSelected) {
                 navButton.isSelected = true
-                navButton.elevation = resources.getDimension(R.dimen.nav_button_elevation)
-                navButton.translationZ = 1f
+                navButton.elevation = resources.getDimension(R.dimen.nav_button_elevation_selected)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    navButton.translationZ = resources.getDimension(R.dimen.nav_button_translationZ_selected)
+                }
                 android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_up).apply {
                     setTarget(navButton)
                     start()
                 }
-            } else if (!shouldBeSelected && navButton.isSelected) {
-                // Apply scale-down animation when deselecting
+            } else {
                 navButton.isSelected = false
-                navButton.elevation = 0f
-                navButton.translationZ = 0f
+                navButton.elevation = resources.getDimension(R.dimen.nav_button_elevation_normal)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    navButton.translationZ = 0f
+                }
                 android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_down).apply {
                     setTarget(navButton)
                     start()
@@ -330,40 +337,71 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     /**
      * Creates a pill-shaped navigation button matching Apple Music design
      */
-    private fun createNavigationButton(text: String, isSelected: Boolean = false): android.widget.Button {
-        return android.widget.Button(this).apply {
+    private fun createNavigationButton(text: String, isSelected: Boolean = false): Button {
+        return Button(this).apply {
             this.text = text
-            textSize = resources.getDimension(R.dimen.nav_button_text_size) / resources.displayMetrics.density
             isAllCaps = false
             typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
             
-            // Remove default button styling
-            stateListAnimator = null
-            
-            // Set elevation only for selected state (in XML it's handled via layer-list)
-            elevation = if (isSelected) resources.getDimension(R.dimen.nav_button_elevation) else 0f
-            translationZ = if (isSelected) 1f else 0f
-            
-            // Set the background drawable 
-            background = getDrawable(R.drawable.nav_button_background)
-            
-            // Set the text color using selector for smooth state transitions
-            setTextColor(resources.getColorStateList(R.color.nav_button_text_color, theme))
-            
-            // Set padding to match design
-            setPadding(
-                resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal),
-                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical),
-                resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal),
-                resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical)
-            )
-            
-            // Set minimum width to zero to prevent default button width
-            minimumWidth = 0
-            minimumHeight = resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical) * 2
-            
-            // Set initially selected state
-            this.isSelected = isSelected
+            val horizontalPadding = resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal)
+            val verticalPadding = resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical)
+            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.nav_button_text_size))
+            setTextColor(ContextCompat.getColorStateList(this@MainActivity, R.color.nav_button_text_color))
+            background = ContextCompat.getDrawable(this@MainActivity, R.drawable.nav_button_background)
+
+            // Set initial elevation and shadow properties
+            elevation = resources.getDimension(R.dimen.nav_button_elevation_normal)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                outlineProvider = ViewOutlineProvider.BOUNDS // Ensures shadow follows rounded corners
+                outlineSpotShadowColor = ContextCompat.getColor(this@MainActivity, R.color.nav_button_shadow_normal)
+            }
+
+            // Set elevation and shadow properties based on selection state
+            isSelected(isSelected)
+
+            // Set click listener to update fragment
+            setOnClickListener {
+                // Update selected navigation item
+                (context as MainActivity).updateSelectedNavigationItem(this.id) // Pass button id
+            }
+        }
+    }
+
+    /**
+     * Updates the elevation and shadow properties of the button based on its selection state
+     */
+    private fun Button.isSelected(selected: Boolean) {
+        if (selected) {
+            // Set a small amount of elevation to add a subtle 3D effect
+            elevation = resources.getDimension(R.dimen.nav_button_elevation_selected)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                outlineProvider = ViewOutlineProvider.BOUNDS
+                outlineSpotShadowColor = ContextCompat.getColor(this@MainActivity, R.color.nav_button_shadow_selected)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                translationZ = resources.getDimension(R.dimen.nav_button_translationZ_selected)
+            }
+            // Start scale-up animation
+            android.animation.AnimatorInflater.loadAnimator(context, R.animator.nav_button_scale_up).apply {
+                setTarget(this@isSelected)
+                start()
+            }
+        } else {
+            // Default elevation for normal state
+            elevation = resources.getDimension(R.dimen.nav_button_elevation_normal)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                outlineSpotShadowColor = ContextCompat.getColor(this@MainActivity, R.color.nav_button_shadow_normal)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                translationZ = 0f
+            }
+            // Reset scale or start scale-down animation if it was previously scaled
+            android.animation.AnimatorInflater.loadAnimator(context, R.animator.nav_button_scale_down).apply {
+                setTarget(this@isSelected)
+                start()
+            }
         }
     }
 }

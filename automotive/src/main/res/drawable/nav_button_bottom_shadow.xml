@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A custom drawable that creates a precise red shadow only at the bottom of the selected button -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Bottom red shadow layer - creating a thicker shadow at the bottom only -->
+    <item android:left="1dp" android:right="1dp" android:top="37dp" android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/apple_music_red" />
+            <corners android:bottomLeftRadius="@dimen/nav_button_corner_radius" 
+                     android:bottomRightRadius="@dimen/nav_button_corner_radius" />
+        </shape>
+    </item>
+    
+    <!-- Main white button on top -->
+    <item android:left="0dp" android:right="0dp" android:top="0dp" android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+            <corners android:radius="@dimen/nav_button_corner_radius" />
+        </shape>
+    </item>
+</layer-list>

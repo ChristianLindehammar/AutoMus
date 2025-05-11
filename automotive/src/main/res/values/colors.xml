@@ -18,7 +18,14 @@
     <color name="on_surface_light">#212121</color>
     <color name="text_primary_light">#000000</color>
     <color name="text_secondary_light">#6E6E73</color>
+    <color name="nav_button_text_normal">#5F5F5F</color> <!-- Dark grey for normal nav button text -->
+    <color name="nav_button_border_normal">#E0E0E0</color> <!-- Light grey for normal nav button border -->
     
+    <!-- Shadow Colors for Elevation -->
+    <color name="nav_button_shadow_selected">#AAFF2D55</color> <!-- 67% alpha of Apple Music Red -->
+    <color name="nav_button_ambient_shadow_selected">#55FF2D55</color> <!-- 33% alpha of Apple Music Red -->
+    <color name="nav_button_shadow_normal">#1A000000</color>   <!-- 10% alpha black for subtle normal shadow -->
+
     <!-- Dark theme colors -->
     <color name="primary_dark_mode">#5C6BC0</color>
     <color name="primary_variant_dark_mode">#3F51B5</color>
@@ -29,6 +36,7 @@
     <color name="on_surface_dark">#FFFFFF</color>
     <color name="text_primary_dark">#FFFFFF</color>
     <color name="text_secondary_dark">#B0BEC5</color>
+    <color name="navigation_area_background">#F5F5F7</color>
 
     <!-- Status indicators -->
     <color name="now_playing_indicator">#4CAF50</color>

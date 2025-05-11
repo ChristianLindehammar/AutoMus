@@ -5,5 +5,11 @@
     <dimen name="nav_button_padding_vertical">12dp</dimen>
     <dimen name="nav_container_padding">12dp</dimen>
     <dimen name="nav_button_text_size">16sp</dimen>
-    <dimen name="nav_button_elevation">1dp</dimen>
+    <dimen name="nav_button_corner_radius">12dp</dimen>
+    <dimen name="nav_button_height">40dp</dimen> <!-- Approximate height of the button -->
+
+    <!-- Elevation and TranslationZ for Navigation Buttons -->
+    <dimen name="nav_button_elevation_normal">0.5dp</dimen>
+    <dimen name="nav_button_elevation_selected">2dp</dimen>
+    <dimen name="nav_button_translationZ_selected">1dp</dimen>
 </resources>
