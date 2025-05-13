@@ -115,7 +115,7 @@ class LibraryFragment : Fragment() {
     private fun setupObservers() {
         // Observe loading state
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoadingValue -> // isLoadingValue might be Any?
-            val isActuallyLoading = isLoadingValue as? Boolean // Safe cast to Boolean?
+            val isActuallyLoading = isLoadingValue
 
             binding.progressBar.visibility = if (isActuallyLoading == true) View.VISIBLE else View.GONE
             
@@ -185,7 +185,7 @@ class LibraryFragment : Fragment() {
     }
 
     private fun updateOverallVisibility() {
-        val currentIsLoading = viewModel.isLoading.value as? Boolean ?: false
+        val currentIsLoading = viewModel.isLoading.value ?: false
 
         // If actively loading, return early as loading state is handled elsewhere
         if (currentIsLoading) {

@@ -203,4 +203,13 @@ class AppleMusicAuthManager(
         Log.d(TAG, "User logged out")
         _authState.value = AuthState.Idle
     }
+    
+    /**
+     * Clear the authentication token and reset the auth state
+     */
+    fun clearToken() {
+        Log.d(TAG, "Clearing authentication token")
+        tokenProvider.clearUserToken()
+        _authState.value = AuthState.Idle
+    }
 }

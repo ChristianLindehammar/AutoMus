@@ -1,6 +1,5 @@
 package com.lindehammarkonsult.automus
 
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
@@ -12,11 +11,11 @@ import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
 import com.lindehammarkonsult.automus.databinding.ActivityMainBinding
 import com.lindehammarkonsult.automus.ui.BrowseFragment
@@ -25,7 +24,6 @@ import com.lindehammarkonsult.automus.ui.MediaAwareActivity
 import com.lindehammarkonsult.automus.ui.NowPlayingFragment
 import com.lindehammarkonsult.automus.ui.SearchFragment
 import com.lindehammarkonsult.automus.viewmodel.MusicViewModel
-import com.lindehammarkonsult.automus.shared.AppleMusicService
 
 private const val TAG = "MainActivity"
 private const val SERVICE_PACKAGE_NAME = "com.lindehammarkonsult.automus"
@@ -33,16 +31,19 @@ private const val SERVICE_PACKAGE_NAME = "com.lindehammarkonsult.automus"
 /**
  * Main activity for the Apple Music Android Automotive application
  */
+@UnstableApi
 class MainActivity : AppCompatActivity(), MediaAwareActivity {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MusicViewModel
     
+    // Legacy media browser (will be removed once migration is complete)
     private var mediaBrowser: MediaBrowserCompat? = null
     
+    // Legacy connection callback
     private val connectionCallback = object : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            Log.d(TAG, "onConnected")
+            Log.d(TAG, "Legacy MediaBrowser onConnected")
             mediaBrowser?.let {
                 val mediaController = MediaControllerCompat(
                     this@MainActivity,
@@ -102,13 +103,18 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Initialize ViewModel
+        // Initialize ViewModel - Media3 version
         viewModel = ViewModelProvider(this)[MusicViewModel::class.java]
         
         // Set up top navigation
         setupTopNavigation()
         
-        // Set up media browser connection
+        // Initialize Media3 connection via the ViewModel
+        // All connections are handled internally in the ViewModel
+        
+        // Legacy media browser connection (disabled, keeping for reference)
+        // Note: Legacy service is disabled in the manifest
+        /*
         mediaBrowser = MediaBrowserCompat(
             this,
             android.content.ComponentName(
@@ -118,6 +124,7 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             connectionCallback,
             null
         )
+        */
         
         // Setup mini player click listeners
         setupMiniPlayerControls()
@@ -125,12 +132,15 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
 
     override fun onStart() {
         super.onStart()
-        mediaBrowser?.connect()
+        // Media3 connection is managed by the ViewModel
+        // mediaBrowser?.connect() // Legacy connection
     }
 
     override fun onStop() {
-        MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
-        mediaBrowser?.disconnect()
+        // Media3 disconnection is managed by the ViewModel
+        // Legacy disconnection (disabled)
+        // MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
+        // mediaBrowser?.disconnect()
         super.onStop()
     }
     

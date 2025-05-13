@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name=".AutoMusApplication"
         android:allowBackup="true"
         android:appCategory="audio"
         android:icon="@mipmap/ic_launcher"
@@ -36,12 +37,24 @@
             </intent-filter>
         </activity>
         
-        <!-- Media Service -->
+        <!-- Legacy Media Service (disabled) -->
         <service
             android:name="com.lindehammarkonsult.automus.shared.AppleMusicService"
-            android:exported="true">
+            android:exported="true"
+            android:enabled="false">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+        
+        <!-- Media3 Service -->
+        <service
+            android:name="com.lindehammarkonsult.automus.shared.AppleMusicMediaService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaLibraryService" />
+                <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
         </service>
         

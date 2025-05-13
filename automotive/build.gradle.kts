@@ -55,6 +55,7 @@ dependencies {
     
     // Image Loading
     implementation(libs.glide)
+    implementation(libs.androidx.media3.common)
     annotationProcessor(libs.glide.compiler)
     
     // UI Layout

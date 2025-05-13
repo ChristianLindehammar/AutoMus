@@ -38,15 +38,25 @@ android {
 
 dependencies {
     // Base Android dependencies
-    implementation libs.androidx.media
+    implementation libs.androidx.media // Keep legacy media for backward compatibility during migration
     implementation libs.androidx.core.ktx.v1160
     implementation libs.androidx.appcompat
     
     // UI Components
     implementation libs.androidx.constraintlayout  // Add ConstraintLayout from version catalog
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4"  // Direct dependency as backup
+    implementation libs.androidx.constraintlayout.v214  // Direct dependency as backup
     
-    // ExoPlayer for media playback with extensions
+    // Media3 dependencies
+    implementation libs.androidx.media3.exoplayer
+    implementation libs.androidx.media3.ui
+    implementation libs.androidx.media3.session
+    implementation libs.androidx.media3.common
+    implementation libs.androidx.media3.cast
+    
+    // Kotlin Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3"
+    
+    // Legacy ExoPlayer for backward compatibility during migration
     implementation libs.exoplayer.core
     implementation libs.exoplayer.ui
     implementation libs.extension.mediasession

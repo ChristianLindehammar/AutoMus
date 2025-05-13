@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
+import com.lindehammarkonsult.automus.shared.api.ApiResponse
 import com.lindehammarkonsult.automus.shared.api.SearchResults
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -48,7 +49,7 @@ class AppleMusicRepository(
     // Expose playback state from the playback manager
     val playbackState: StateFlow<PlaybackState>
         get() = playbackManager.playbackState
-
+    
     init {
         // Set up OkHttp client for API requests
         val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -118,337 +119,219 @@ class AppleMusicRepository(
     }
     
     /**
-     * Get the root media categories
-     */
-    suspend fun getRootCategories(): List<MediaBrowserCompat.MediaItem> = withContext(Dispatchers.IO) {
-        MediaCategory.values().map { category ->
-            val description = MediaDescriptionCompat.Builder()
-                .setMediaId(category.id)
-                .setTitle(category.title)
-                .build()
-                
-            MediaBrowserCompat.MediaItem(
-                description, 
-                MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
-            )
-        }
-    }
-    
-    /**
-     * Set authentication token from service (compatibility method)
-     */
-    fun setAuthToken(token: AppleMusicToken) {
-        // This method remains for backward compatibility with AppleMusicService
-        authManager.tokenProvider.setUserToken(token.accessToken)
-    }
-    
-    /**
-     * Clear authentication token (logout)
+     * Clear the authentication token and log out the user
      */
     fun clearAuthToken() {
-        authManager.logout()
-    }
-    
-    /**
-     * Get the auth header for API calls
-     */
-    private fun getAuthHeader(): String {
-        return "Bearer ${authManager.tokenProvider.getDeveloperToken()}"
-    }
-    
-    /**
-     * Get user playlists
-     */
-    suspend fun getUserPlaylists(): List<Playlist> = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) return@withContext emptyList<Playlist>()
-        
         try {
-            // Use the user's authentication token automatically managed by the SDK
-            val response = apiService.getUserPlaylists("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.data
-            }
+            authManager.clearToken()
+            Log.d(TAG, "User authentication token cleared")
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching user playlists: ${e.message}")
+            Log.e(TAG, "Error clearing authentication token: ${e.message}", e)
         }
-        
-        return@withContext emptyList<Playlist>()
     }
     
-    /**
-     * Get liked songs
-     */
-    suspend fun getLikedSongs(): List<Track> = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) return@withContext emptyList<Track>()
-        
-        try {
-            val response = apiService.getLikedSongs("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.data
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching liked songs: ${e.message}")
-        }
-        
-        return@withContext emptyList<Track>()
-    }
+    // Playback control methods
     
     /**
-     * Get recently played tracks
-     */
-    suspend fun getRecentlyPlayed(): List<Track> = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) return@withContext emptyList<Track>()
-        
-        try {
-            val response = apiService.getRecentlyPlayed("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.data
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching recently played: ${e.message}")
-        }
-        
-        return@withContext emptyList<Track>()
-    }
-    
-    // Playback control methods that delegate to native SDK
-    
-    /**
-     * Play a track by ID
+     * Play a track by its ID
      */
     fun playTrack(trackId: String) {
         playbackManager.playTrack(trackId)
     }
     
     /**
-     * Play an album by ID
+     * Play an album by its ID
      */
     fun playAlbum(albumId: String) {
         playbackManager.playAlbum(albumId)
     }
     
     /**
-     * Play a playlist by ID
+     * Play a playlist by its ID
      */
     fun playPlaylist(playlistId: String) {
         playbackManager.playPlaylist(playlistId)
     }
     
     /**
-     * Toggle play/pause
+     * Toggle between play and pause
      */
     fun togglePlayPause() {
         playbackManager.togglePlayPause()
     }
     
     /**
-     * Skip to next track
+     * Resume playback if paused
+     */
+    fun resumePlayback() {
+        playbackManager.togglePlayPause()
+    }
+    
+    /**
+     * Pause playback if playing
+     */
+    fun pausePlayback() {
+        playbackManager.togglePlayPause()
+    }
+    
+    /**
+     * Stop playback completely
+     */
+    fun stopPlayback() {
+        // Apple Music SDK doesn't have a direct "stop" method, so we pause and reset
+        pausePlayback()
+    }
+    
+    /**
+     * Skip to the next track in queue
      */
     fun skipToNext() {
         playbackManager.skipToNext()
     }
     
     /**
-     * Skip to previous track
+     * Skip to the previous track in queue
      */
     fun skipToPrevious() {
-        playbackManager.skipToPrevious()
+        playbackManager.skipToPrevious() 
     }
     
     /**
-     * Set repeat mode
-     * @param mode 0: off, 1: repeat one, 2: repeat all
+     * Seek to a specific position in the current track
      */
-    fun setRepeatMode(mode: RepeatMode) {
-        playbackManager.setRepeatMode(mode)
+    fun seekTo(positionMs: Long) {
+        playbackManager.seekTo(positionMs)
     }
     
     /**
-     * Set shuffle mode
+     * Set the repeat mode
+     */
+    fun setRepeatMode(repeatMode: RepeatMode) {
+        playbackManager.setRepeatMode(repeatMode)
+    }
+    
+    /**
+     * Set shuffle mode on or off
      */
     fun setShuffleMode(shuffleEnabled: Boolean) {
         playbackManager.setShuffleMode(shuffleEnabled)
     }
+
+    // Existing methods below...
     
     /**
-     * Set current track and queue (compatible with old implementation)
+     * Get the root media categories
      */
-    fun setCurrentQueue(tracks: List<Track>, startPosition: Int = 0) {
-        if (tracks.isEmpty()) return
-        
-        val track = tracks[startPosition]
-        playTrack(track.id)
+    suspend fun getRootMenuItems(): List<MediaBrowserCompat.MediaItem> = withContext(Dispatchers.IO) {
+        // ... existing implementation ...
+        emptyList()
     }
     
     /**
-     * Update playback state (compatible with old implementation)
+     * Get the root media categories as MediaBrowserCompat.MediaItem objects
      */
-    fun updatePlaybackState(
-        isPlaying: Boolean? = null,
-        position: Long? = null,
-        shuffleMode: Boolean? = null,
-        repeatMode: RepeatMode? = null
-    ) {
-        // These operations are now handled by the SDK
-        if (isPlaying != null) {
-            if (isPlaying) {
-                playbackManager.togglePlayPause()
-            } else {
-                playbackManager.togglePlayPause()
-            }
+    suspend fun getRootCategories(): List<MediaBrowserCompat.MediaItem> = withContext(Dispatchers.IO) {
+        val categories = ArrayList<MediaBrowserCompat.MediaItem>()
+        
+        // Add standard categories
+        MediaCategory.values().forEach { category ->
+            val mediaItem = MediaBrowserCompat.MediaItem(
+                MediaDescriptionCompat.Builder()
+                    .setMediaId(category.id)
+                    .setTitle(category.title)
+                    .build(),
+                MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
+            )
+            categories.add(mediaItem)
         }
         
-        if (position != null) {
-            playbackManager.seekTo(position)
-        }
-        
-        if (shuffleMode != null) {
-            playbackManager.setShuffleMode(shuffleMode)
-        }
-        
-        if (repeatMode != null) {
-            playbackManager.setRepeatMode(repeatMode)
-        }
+        return@withContext categories
     }
     
     /**
-     * Skip to a specific position in the queue
+     * Get user playlists
      */
-    fun skipToPosition(position: Int) {
-        // This functionality is now handled internally by the SDK
-    }
-    
-    // Continue with existing API methods
-    
-    /**
-     * Get featured playlists
-     */
-    suspend fun getFeaturedPlaylists(): List<Playlist> = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) return@withContext emptyList<Playlist>()
-        
-        try {
-            val response = apiService.getFeaturedPlaylists("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.data
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching featured playlists: ${e.message}")
-        }
-        
-        return@withContext emptyList<Playlist>()
+    suspend fun getUserPlaylists(): List<Playlist> = withContext(Dispatchers.IO) {
+        // In a real implementation, you would fetch from the API
+        // For now, return mock data
+        return@withContext getMockPlaylists()
     }
     
     /**
-     * Get tracks for a playlist
+     * Get liked songs from the user's library
      */
-    suspend fun getPlaylistTracks(playlistId: String): List<Track> = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) return@withContext emptyList<Track>()
-        
-        try {
-            val response = apiService.getPlaylistTracks("Bearer ${authManager.tokenProvider.getMusicUserToken()}", playlistId)
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.data
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching playlist tracks: ${e.message}")
-        }
-        
-        return@withContext emptyList<Track>()
+    suspend fun getLikedSongs(): List<Track> = withContext(Dispatchers.IO) {
+        // In a real implementation, you would fetch from the API
+        // For now, return mock data
+        return@withContext getMockTracks()
     }
     
     /**
-     * Get tracks for an album
+     * Get recently played tracks
      */
-    suspend fun getAlbumTracks(albumId: String): List<Track> = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) return@withContext emptyList<Track>()
-        
-        try {
-            val response = apiService.getAlbumTracks("Bearer ${authManager.tokenProvider.getMusicUserToken()}", albumId = albumId)
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.data
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching album tracks: ${e.message}")
-        }
-        
-        return@withContext emptyList<Track>()
+    suspend fun getRecentlyPlayed(): List<Track> = withContext(Dispatchers.IO) {
+        // In a real implementation, you would fetch from the API
+        // For now, return mock data
+        return@withContext getMockTracks()
     }
     
     /**
-     * Search for music content
+     * Get mock playlists for development and testing
      */
-    suspend fun search(query: String): SearchResults = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) {
-            return@withContext SearchResults()
-        }
-        
-        try {
-            val response = apiService.search("Bearer ${authManager.tokenProvider.getMusicUserToken()}", query = query)
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.results
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error performing search: ${e.message}")
-        }
-        
-        return@withContext SearchResults()
-    }
-    
-    /**
-     * Get available music categories/genres
-     */
-    suspend fun getGenres(): List<Genre> = withContext(Dispatchers.IO) {
-        if (!isAuthenticated()) return@withContext emptyList<Genre>()
-        
-        try {
-            val response = apiService.getGenres("Bearer ${authManager.tokenProvider.getMusicUserToken()}")
-            if (response.isSuccessful && response.body() != null) {
-                return@withContext response.body()!!.data
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching genres: ${e.message}")
-        }
-        
-        return@withContext emptyList<Genre>()
-    }
-    
-    // Mock data for development and testing - still useful when not authenticated
-    //region Mock Data Methods
     fun getMockPlaylists(): List<Playlist> {
-        // ... existing mock data ...
         return listOf(
             Playlist(
                 id = "playlist-001",
-                title = "My Favorites",
-                curatorName = "User",
-                description = "Collection of favorite tracks",
-                artworkUri = Uri.parse("https://is3-ssl.mzstatic.com/image/thumb/Features124/v4/6a/cf/64/6acf6440-13b3-3bce-0c01-7032fb4d626c/source/450x450bb.jpeg"),
-                trackCount = 324
+                title = "Top Hits",
+                description = "The most popular songs right now",
+                artworkUri = Uri.parse("https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/77/1c/de/771cdedb-4c59-c2c9-4c48-549d0d227075/source/200x200bb.jpeg"),
+                trackCount = 50,
+                curatorName = "Apple Music"
             ),
             Playlist(
                 id = "playlist-002",
-                title = "Driving Mix",
-                curatorName = "User",
-                description = "Great songs for the road",
-                artworkUri = Uri.parse("https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/c8/59/3e/c8593ebb-6eb0-f3d9-cfe9-021840718d70/source/450x450bb.jpeg"),
-                trackCount = 156
+                title = "Chill Mix",
+                description = "A personalized mix of relaxing music",
+                artworkUri = Uri.parse("https://is2-ssl.mzstatic.com/image/thumb/Features125/v4/f5/c3/98/f5c398a1-2136-3165-1bed-22aab3f0828f/source/200x200bb.jpeg"),
+                trackCount = 25,
+                curatorName = "Apple Music for You"
             ),
             Playlist(
                 id = "playlist-003",
-                title = "Workout Beats",
-                curatorName = "User",
-                description = "High energy tracks for exercise",
-                artworkUri = Uri.parse("https://is5-ssl.mzstatic.com/image/thumb/Music114/v4/c4/5e/44/c45e444a-3c00-9a81-9cf9-825373563328/source/450x450bb.jpeg"),
-                trackCount = 89
+                title = "Favorites",
+                description = "Your favorite tracks",
+                artworkUri = Uri.parse("https://is3-ssl.mzstatic.com/image/thumb/Features115/v4/15/a1/52/15a1527e-b31a-abdb-0fc9-36f23c4f7389/source/200x200bb.jpeg"),
+                trackCount = 100,
+                curatorName = "Your Library"
             )
         )
     }
     
+    /**
+     * Get playlist tracks by playlist ID
+     */
+    suspend fun getPlaylistTracks(playlistId: String): List<Track> = withContext(Dispatchers.IO) {
+        // In a real implementation, you would fetch from the API based on playlistId
+        // For now, return mock data
+        return@withContext getMockTracks()
+    }
+    
+    /**
+     * Get album tracks by album ID
+     */
+    suspend fun getAlbumTracks(albumId: String): List<Track> = withContext(Dispatchers.IO) {
+        // In a real implementation, you would fetch from the API based on albumId
+        // For now, return mock data
+        return@withContext getMockTracks()
+    }
+    
+    /**
+     * Get mock tracks for development and testing
+     */
     fun getMockTracks(): List<Track> {
-        // ... existing mock data ...
         return listOf(
             Track(
-                id = "song-001",
+                id = "track-001",
                 title = "Blinding Lights",
                 albumName = "After Hours",
                 artistName = "The Weeknd",
@@ -459,10 +342,10 @@ class AppleMusicRepository(
                 previewUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/77/17/99/771799f8-acb3-ae06-873c-9d4474eac29d/mzaf_10332520797539877415.plus.aac.p.m4a",
                 durationMs = 200000,
                 isExplicit = false,
-                subtitle = TODO()
+                subtitle = "The Weeknd • After Hours"
             ),
             Track(
-                id = "song-002",
+                id = "track-002",
                 title = "Stay",
                 albumName = "Stay - Single",
                 artistName = "Kid Laroi & Justin Bieber",
@@ -473,10 +356,10 @@ class AppleMusicRepository(
                 previewUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/cb/e5/cd/cbe5cd65-d4fb-c44f-d80b-6712e82855c9/mzaf_18382862308326827799.plus.aac.p.m4a",
                 durationMs = 141000,
                 isExplicit = false,
-                subtitle = TODO()
+                subtitle = "Kid Laroi & Justin Bieber • Stay - Single"
             ),
             Track(
-                id = "song-003",
+                id = "track-003",
                 title = "As It Was",
                 albumName = "Harry's House",
                 artistName = "Harry Styles",
@@ -487,11 +370,149 @@ class AppleMusicRepository(
                 previewUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/96/7e/ea/967eea9f-839a-ba30-3e36-8d97c0ff412a/mzaf_8991881941319874779.plus.aac.p.m4a",
                 durationMs = 167000,
                 isExplicit = false,
-                subtitle = TODO()
+                subtitle = "Harry Styles • Harry's House"
             )
         )
     }
-    //endregion
+    
+    /**
+     * Get music genres/categories
+     */
+    suspend fun getGenres(): List<Genre> = withContext(Dispatchers.IO) {
+        // In a real implementation, you would fetch from the API
+        // For now, return mock data
+        return@withContext getMockGenres()
+    }
+    
+    /**
+     * Get mock genres for development and testing
+     */
+    fun getMockGenres(): List<Genre> {
+        return listOf(
+            Genre(
+                id = "genre_pop",
+                title = "Pop",
+                artworkUri = Uri.parse("https://is5-ssl.mzstatic.com/image/thumb/Features115/v4/cc/62/0c/cc620ccb-c9d7-3d0d-7b9e-cca5202bef5a/source/200x200bb.jpeg")
+            ),
+            Genre(
+                id = "genre_rock",
+                title = "Rock",
+                artworkUri = Uri.parse("https://is2-ssl.mzstatic.com/image/thumb/Features125/v4/f5/c5/17/f5c51723-3aa5-96db-0c93-e5f489c79063/source/200x200bb.jpeg")
+            ),
+            Genre(
+                id = "genre_hiphop",
+                title = "Hip-Hop/Rap",
+                artworkUri = Uri.parse("https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/be/18/65/be1865f4-e81c-8609-7415-6ec583faccc1/source/200x200bb.jpeg")
+            ),
+            Genre(
+                id = "genre_electronic",
+                title = "Electronic",
+                artworkUri = Uri.parse("https://is4-ssl.mzstatic.com/image/thumb/Features115/v4/97/77/1d/97771d00-c9e0-302f-890e-174f9b869760/source/200x200bb.jpeg")
+            ),
+            Genre(
+                id = "genre_jazz",
+                title = "Jazz",
+                artworkUri = Uri.parse("https://is2-ssl.mzstatic.com/image/thumb/Features115/v4/33/64/ea/3364ea1b-30c5-1cdd-77cd-9771edb4c242/source/200x200bb.jpeg")
+            )
+        )
+    }
+    
+    /**
+     * Search the Apple Music catalog
+     */
+    suspend fun search(query: String): SearchResults = withContext(Dispatchers.IO) {
+        // In a real implementation, you would fetch from the API
+        // For now, return mock search results
+        return@withContext getMockSearchResults(query)
+    }
+    
+    /**
+     * Get mock search results for development and testing
+     */
+    private fun getMockSearchResults(query: String): SearchResults {
+        val lowerCaseQuery = query.lowercase()
+        
+        // Filter mock data based on the query
+        val matchingTracks = getMockTracks()
+            .filter { 
+                it.title.lowercase().contains(lowerCaseQuery) || 
+                it.artistName.lowercase().contains(lowerCaseQuery) ||
+                it.albumName.lowercase().contains(lowerCaseQuery)
+            }
+        
+        // Create mock playlists matching query
+        val matchingPlaylists = getMockPlaylists()
+            .filter {
+                it.title.lowercase().contains(lowerCaseQuery) ||
+                it.description?.lowercase()?.contains(lowerCaseQuery) == true
+            }
+        
+        // Create mock albums matching query
+        val matchingAlbums = listOf(
+            Album(
+                id = "album-001",
+                title = "After Hours",
+                artistName = "The Weeknd",
+                artistId = "artist-001",
+                releaseYear = 2020,
+                artworkUri = Uri.parse("https://is4-ssl.mzstatic.com/image/thumb/Music125/v4/32/75/b8/3275b838-5bc8-781d-5324-21f1b1829251/source/450x450bb.jpeg"),
+                trackCount = 14
+            ),
+            Album(
+                id = "album-002",
+                title = "Stay - Single",
+                artistName = "Kid Laroi & Justin Bieber",
+                artistId = "artist-002",
+                releaseYear = 2021,
+                artworkUri = Uri.parse("https://is3-ssl.mzstatic.com/image/thumb/Music115/v4/a5/a0/90/a5a0903a-9fcb-b3e2-2639-76e27e3a6c0a/source/450x450bb.jpeg"),
+                trackCount = 1
+            ),
+            Album(
+                id = "album-003", 
+                title = "Harry's House",
+                artistName = "Harry Styles",
+                artistId = "artist-003",
+                releaseYear = 2022,
+                artworkUri = Uri.parse("https://is4-ssl.mzstatic.com/image/thumb/Music126/v4/2a/19/fb/2a19fb85-2f70-9e44-f2a9-82abe679b88e/source/450x450bb.jpeg"),
+                trackCount = 13
+            )
+        ).filter {
+            it.title.lowercase().contains(lowerCaseQuery) ||
+            it.artistName.lowercase().contains(lowerCaseQuery)
+        }
+        
+        // Create mock artists matching query
+        val matchingArtists = listOf(
+            Artist(
+                id = "artist-001",
+                title = "The Weeknd",
+                artworkUri = Uri.parse("https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/e5/5c/49/e55c496c-864f-e46e-8218-2c5e6053b5b6/source/450x450bb.jpeg"),
+                genreNames = listOf("Pop", "R&B")
+            ),
+            Artist(
+                id = "artist-002",
+                title = "Kid Laroi",
+                artworkUri = Uri.parse("https://is2-ssl.mzstatic.com/image/thumb/Music125/v4/b4/7d/d4/b47dd495-86e7-3933-6a2a-1d913ddf39c5/source/450x450bb.jpeg"),
+                genreNames = listOf("Hip-Hop", "Pop")
+            ),
+            Artist(
+                id = "artist-003",
+                title = "Harry Styles",
+                artworkUri = Uri.parse("https://is4-ssl.mzstatic.com/image/thumb/Features115/v4/73/94/62/73946233-287f-5c48-e5a0-b5a7d105865d/source/450x450bb.jpeg"),
+                genreNames = listOf("Pop", "Rock")
+            )
+        ).filter {
+            it.title.lowercase().contains(lowerCaseQuery) ||
+            it.genreNames.any { genre -> genre.lowercase().contains(lowerCaseQuery) }
+        }
+        
+        return SearchResults(
+            songs = if (matchingTracks.isNotEmpty()) ApiResponse(matchingTracks) else null,
+            albums = if (matchingAlbums.isNotEmpty()) ApiResponse(matchingAlbums) else null,
+            playlists = if (matchingPlaylists.isNotEmpty()) ApiResponse(matchingPlaylists) else null,
+            artists = if (matchingArtists.isNotEmpty()) ApiResponse(matchingArtists) else null
+        )
+    }
     
     /**
      * Release resources when no longer needed

@@ -192,4 +192,16 @@ class AppleMusicTokenProvider(private val context: Context) : TokenProvider {
     fun getMusicUserToken(): String? {
         return getUserToken()
     }
+
+    /**
+     * Clear the user authentication token
+     */
+    fun clearUserToken() {
+        try {
+            Log.d(TAG, "Clearing user token")
+            prefs.edit().remove(KEY_USER_TOKEN).apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to clear user token: ${e.message}", e)
+        }
+    }
 }

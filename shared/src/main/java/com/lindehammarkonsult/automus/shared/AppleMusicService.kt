@@ -1,11 +1,9 @@
 package com.lindehammarkonsult.automus.shared
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -14,7 +12,13 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.media.MediaBrowserServiceCompat
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.lindehammarkonsult.automus.shared.model.*
+import com.lindehammarkonsult.automus.shared.model.Album
+import com.lindehammarkonsult.automus.shared.model.Artist
+import com.lindehammarkonsult.automus.shared.model.MediaCategory
+import com.lindehammarkonsult.automus.shared.model.PlaybackState
+import com.lindehammarkonsult.automus.shared.model.Playlist
+import com.lindehammarkonsult.automus.shared.model.Track
+import com.lindehammarkonsult.automus.shared.model.toMediaItem
 import com.lindehammarkonsult.automus.shared.repository.AppleMusicRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
