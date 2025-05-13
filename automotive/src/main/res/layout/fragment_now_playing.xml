@@ -12,7 +12,8 @@
         android:layout_height="48dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Back"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:src="@drawable/ic_close"
+        android:padding="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

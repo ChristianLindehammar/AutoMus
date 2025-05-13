@@ -63,6 +63,21 @@ class NowPlayingFragment : Fragment() {
     private fun setupClickListeners() {
         // Set click listeners for the playback controls
         binding.apply {
+            // Add click listener for the back/close button
+            backButton.setOnClickListener {
+                // Go back to previous fragment
+                if (requireActivity().supportFragmentManager.backStackEntryCount > 0) {
+                    requireActivity().supportFragmentManager.popBackStack()
+                } else {
+                    // Fallback if for some reason we're not in the back stack
+                    (requireActivity() as? MediaAwareActivity)?.let { mediaActivity ->
+                        // Return to previously selected tab and show mini player
+                        mediaActivity.hideMiniPlayer()
+                        mediaActivity.showMiniPlayer()
+                    }
+                }
+            }
+            
             playPauseButton.setOnClickListener {
                 val controller = MediaControllerCompat.getMediaController(requireActivity())
                 val pbState = controller?.playbackState?.state

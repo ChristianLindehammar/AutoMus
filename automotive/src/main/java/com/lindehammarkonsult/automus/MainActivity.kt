@@ -229,13 +229,19 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     }
     
     private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
+        val transaction = supportFragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.fade_slide_in,
                 R.anim.fade_slide_out
             )
             .replace(R.id.fragmentContainer, fragment)
-            .commit()
+        
+        // Add to back stack only if it's the now playing fragment
+        if (fragment is NowPlayingFragment) {
+            transaction.addToBackStack("nowPlaying")
+        }
+        
+        transaction.commit()
     }
     
     private fun setupMiniPlayerControls() {
@@ -411,6 +417,24 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
                 setTarget(this@isSelected)
                 start()
             }
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Check if current fragment is NowPlayingFragment
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+        
+        if (currentFragment is NowPlayingFragment) {
+            // If in now playing screen, pop back stack to return to previous fragment
+            supportFragmentManager.popBackStack()
+        } else if (supportFragmentManager.backStackEntryCount > 0) {
+            // If there are entries in back stack, pop them
+            supportFragmentManager.popBackStack()
+        } else {
+            // Otherwise, perform default back behavior
+            @Suppress("DEPRECATION")
+            super.onBackPressed()
         }
     }
 }
