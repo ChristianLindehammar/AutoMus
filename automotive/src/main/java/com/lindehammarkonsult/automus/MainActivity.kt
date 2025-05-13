@@ -282,6 +282,8 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     }
     
     override fun showNowPlaying() {
+        // Hide mini player before showing the full player
+        hideMiniPlayer()
         loadFragment(NowPlayingFragment())
         // Don't select any navigation item as "Now Playing" is not part of bottom navigation
     }
@@ -428,7 +430,8 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
         
         if (currentFragment is NowPlayingFragment) {
-            // If in now playing screen, pop back stack to return to previous fragment
+            // If in now playing screen, show the mini player and pop back stack
+            showMiniPlayer()
             supportFragmentManager.popBackStack()
         } else if (supportFragmentManager.backStackEntryCount > 0) {
             // If there are entries in back stack, pop them

@@ -67,12 +67,13 @@ class NowPlayingFragment : Fragment() {
             backButton.setOnClickListener {
                 // Go back to previous fragment
                 if (requireActivity().supportFragmentManager.backStackEntryCount > 0) {
+                    // First show the mini player before popping the back stack
+                    (requireActivity() as? MediaAwareActivity)?.showMiniPlayer()
                     requireActivity().supportFragmentManager.popBackStack()
                 } else {
                     // Fallback if for some reason we're not in the back stack
                     (requireActivity() as? MediaAwareActivity)?.let { mediaActivity ->
                         // Return to previously selected tab and show mini player
-                        mediaActivity.hideMiniPlayer()
                         mediaActivity.showMiniPlayer()
                     }
                 }
@@ -116,8 +117,8 @@ class NowPlayingFragment : Fragment() {
                     .load(albumArtUri)
                     .placeholder(R.drawable.album_art_placeholder)
                     .error(R.drawable.album_art_placeholder)
-                    .fitCenter() // Ensure image is fit properly within bounds
-                    .transform(com.bumptech.glide.load.resource.bitmap.RoundedCorners(8)) // Add rounded corners
+                    .centerCrop() // Fill the available space
+                    .transform(com.bumptech.glide.load.resource.bitmap.RoundedCorners(10)) // Light rounded corners
                     .into(albumArt)
             } else {
                 albumArt.setImageResource(R.drawable.album_art_placeholder)
