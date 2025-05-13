@@ -17,6 +17,7 @@
         android:layout_marginEnd="16dp"
         app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
+        app:cardBackgroundColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -27,7 +28,7 @@
             android:layout_height="wrap_content"
             android:iconifiedByDefault="false"
             android:queryHint="Search for songs, artists, or playlists"
-            android:background="@color/background_light" />
+            android:background="@android:color/white" />
     </androidx.cardview.widget.CardView>
 
     <TextView

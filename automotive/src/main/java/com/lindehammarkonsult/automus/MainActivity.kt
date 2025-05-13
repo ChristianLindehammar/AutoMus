@@ -107,42 +107,11 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         
         // Set up top navigation
         setupTopNavigation()
-        
-        // Initialize Media3 connection via the ViewModel
-        // All connections are handled internally in the ViewModel
-        
-        // Legacy media browser connection (disabled, keeping for reference)
-        // Note: Legacy service is disabled in the manifest
-        /*
-        mediaBrowser = MediaBrowserCompat(
-            this,
-            android.content.ComponentName(
-                SERVICE_PACKAGE_NAME,
-                AppleMusicService::class.java.name
-            ),
-            connectionCallback,
-            null
-        )
-        */
-        
+
         // Setup mini player click listeners
         setupMiniPlayerControls()
     }
 
-    override fun onStart() {
-        super.onStart()
-        // Media3 connection is managed by the ViewModel
-        // mediaBrowser?.connect() // Legacy connection
-    }
-
-    override fun onStop() {
-        // Media3 disconnection is managed by the ViewModel
-        // Legacy disconnection (disabled)
-        // MediaControllerCompat.getMediaController(this)?.unregisterCallback(controllerCallback)
-        // mediaBrowser?.disconnect()
-        super.onStop()
-    }
-    
     private fun setupTopNavigation() {
         // Default fragment
         if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) == null) {
