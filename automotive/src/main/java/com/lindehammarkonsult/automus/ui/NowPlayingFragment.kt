@@ -114,10 +114,13 @@ class NowPlayingFragment : Fragment() {
             if (albumArtUri != null) {
                 Glide.with(this@NowPlayingFragment)
                     .load(albumArtUri)
-                    .placeholder(R.drawable.ic_library)
+                    .placeholder(R.drawable.album_art_placeholder)
+                    .error(R.drawable.album_art_placeholder)
+                    .fitCenter() // Ensure image is fit properly within bounds
+                    .transform(com.bumptech.glide.load.resource.bitmap.RoundedCorners(8)) // Add rounded corners
                     .into(albumArt)
             } else {
-                albumArt.setImageResource(R.drawable.ic_library)
+                albumArt.setImageResource(R.drawable.album_art_placeholder)
             }
         }
     }

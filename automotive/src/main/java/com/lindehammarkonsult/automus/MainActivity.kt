@@ -299,6 +299,8 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
                 Glide.with(this)
                     .load(artworkUri)
                     .placeholder(R.drawable.album_art_placeholder)
+                    .error(R.drawable.album_art_placeholder)
+                    .centerCrop() // For mini player, centerCrop is appropriate as we want to fill the small square
                     .into(binding.miniPlayer.ivAlbumArt)
             } else {
                 // Use default artwork
