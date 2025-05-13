@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.lindehammarkonsult.automus.R
 import com.lindehammarkonsult.automus.databinding.ItemGenreCategoryBinding
 import com.lindehammarkonsult.automus.model.GenreCategory
 

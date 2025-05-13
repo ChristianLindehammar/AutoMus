@@ -3,11 +3,9 @@
     <!-- Common colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#FF000000</color>
-    <color name="transparent">#00000000</color>
-    
+
     <!-- Apple Music theme colors -->
     <color name="apple_red">#FF2D55</color>
-    <color name="apple_pink">#FF375F</color>
     <color name="apple_music_red">#FF2D55</color>
     <color name="primary">#FF2D55</color>
     <color name="primary_variant">#E6264D</color>
@@ -23,7 +21,7 @@
     
     <!-- Shadow Colors for Elevation -->
     <color name="nav_button_shadow_selected">#AAFF2D55</color> <!-- 67% alpha of Apple Music Red -->
-    <color name="nav_button_ambient_shadow_selected">#55FF2D55</color> <!-- 33% alpha of Apple Music Red -->
+    <!-- 33% alpha of Apple Music Red -->
     <color name="nav_button_shadow_normal">#1A000000</color>   <!-- 10% alpha black for subtle normal shadow -->
 
     <!-- Dark theme colors -->
@@ -39,7 +37,4 @@
     <color name="navigation_area_background">#F5F5F7</color>
 
     <!-- Status indicators -->
-    <color name="now_playing_indicator">#4CAF50</color>
-    <color name="downloaded_indicator">#03A9F4</color>
-    <color name="favorite_indicator">#F44336</color>
 </resources>

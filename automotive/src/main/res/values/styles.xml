@@ -2,8 +2,5 @@
 <resources>
 
     <!-- Base style for all fragments -->
-    <style name="FragmentBase">
-        <item name="android:background">@color/background_light</item>
-    </style>
 
 </resources>

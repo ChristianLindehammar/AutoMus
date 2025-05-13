@@ -3,14 +3,11 @@ package com.lindehammarkonsult.automus.shared
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
@@ -22,13 +19,18 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
-import com.lindehammarkonsult.automus.shared.model.*
+import com.lindehammarkonsult.automus.shared.model.Album
+import com.lindehammarkonsult.automus.shared.model.Artist
+import com.lindehammarkonsult.automus.shared.model.Genre
+import com.lindehammarkonsult.automus.shared.model.MediaCategory
+import com.lindehammarkonsult.automus.shared.model.Playlist
+import com.lindehammarkonsult.automus.shared.model.Track
+import com.lindehammarkonsult.automus.shared.model.toMedia3Item
 import com.lindehammarkonsult.automus.shared.playback.AppleMusicPlayer
 import com.lindehammarkonsult.automus.shared.repository.AppleMusicRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 private const val TAG = "AppleMusicMediaService"
@@ -49,8 +51,7 @@ class AppleMusicMediaService : MediaLibraryService() {
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     
-    private val handler = Handler(Looper.getMainLooper())
-    
+
     // Authentication properties from BuildConfig
     private val developerToken = BuildConfig.APPLE_MUSIC_DEVELOPER_TOKEN
     private val clientId = BuildConfig.APPLE_MUSIC_CLIENT_ID

@@ -1,14 +1,11 @@
 package com.lindehammarkonsult.automus.shared.playback
 
-import android.os.Bundle
-import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
-
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -28,6 +25,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+
+private const val TAG = "AppleMusicPlayer"
+
 /**
  * A custom Player implementation that bridges Media3 Player interface with the Apple Music SDK.
  * This implementation delegates all playback operations to the AppleMusicRepository, which
@@ -38,9 +38,7 @@ class AppleMusicPlayer(
     private val repository: AppleMusicRepository,
     private val coroutineScope: CoroutineScope
 ) : Player {
-    private val TAG = "AppleMusicPlayer"
 
-    private val handler = Handler(Looper.getMainLooper())
     private val listeners = mutableListOf<Player.Listener>()
     
     // Current state

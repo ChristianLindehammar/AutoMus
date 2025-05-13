@@ -26,7 +26,6 @@ import com.lindehammarkonsult.automus.ui.SearchFragment
 import com.lindehammarkonsult.automus.viewmodel.MusicViewModel
 
 private const val TAG = "MainActivity"
-private const val SERVICE_PACKAGE_NAME = "com.lindehammarkonsult.automus"
 
 /**
  * Main activity for the Apple Music Android Automotive application

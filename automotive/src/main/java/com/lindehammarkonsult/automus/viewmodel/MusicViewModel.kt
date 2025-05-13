@@ -1,7 +1,6 @@
 package com.lindehammarkonsult.automus.viewmodel
 
 import android.app.Application
-import android.net.Uri
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -9,10 +8,8 @@ import android.support.v4.media.session.PlaybackStateCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import com.lindehammarkonsult.automus.shared.client.AppleMusicClient
 import com.lindehammarkonsult.automus.shared.utils.MediaItemConverter
 import com.lindehammarkonsult.automus.shared.viewmodel.Media3ViewModel

@@ -2,7 +2,6 @@ package com.lindehammarkonsult.automus
 
 import android.app.Application
 import android.util.Log
-import com.lindehammarkonsult.automus.shared.AppleMusicMediaService
 import com.lindehammarkonsult.automus.shared.BuildConfig
 
 /**

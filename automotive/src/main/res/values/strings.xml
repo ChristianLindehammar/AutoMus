@@ -1,5 +1,3 @@
 <resources>
     <string name="app_name">AutoMus</string>
-    <string name="browse_title">Browse</string>
-    <string name="browse_empty_state">No content available. Check your connection and try again.</string>
 </resources>

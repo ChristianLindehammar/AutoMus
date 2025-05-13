@@ -1,14 +1,10 @@
 package com.lindehammarkonsult.automus.ui.adapters
 
-import android.content.Context
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.lindehammarkonsult.automus.R
 import com.lindehammarkonsult.automus.databinding.ItemGenrePillBinding
 
 /**
