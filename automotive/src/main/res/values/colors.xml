@@ -38,4 +38,11 @@
     <color name="navigation_area_background">#F5F5F7</color>
 
     <!-- Status indicators -->
+
+    <!-- Navigation colors -->
+    <color name="navigation_selected_bg">#FFF2F2</color>
+    <color name="navigation_selected_tint">#FF3B30</color>
+    <color name="navigation_selected_text">#FF3B30</color>
+    <color name="navigation_unselected_tint">#666666</color>
+    <color name="navigation_unselected_text">#666666</color>
 </resources>

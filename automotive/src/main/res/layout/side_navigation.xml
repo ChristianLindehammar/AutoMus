@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sideNavigation"
+    android:layout_width="@dimen/nav_container_width"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:elevation="1dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp"
+    android:visibility="visible">
+
+    <!-- Logo and title section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="32dp">
+        
+        <ImageView
+            android:id="@+id/apple_music_logo"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_apple_music_logo_new"
+            android:contentDescription="Apple Music"
+            android:tint="@color/black" />
+            
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Apple Music"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Navigation items -->
+    <!-- Library item (selected) -->
+    <LinearLayout
+        android:id="@+id/nav_library"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#FFF2F2"
+        android:padding="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_music_note"
+            android:tint="#FF3B30"
+            android:contentDescription="Library" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Library"
+            android:textColor="#FF3B30"
+            android:textSize="16sp"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <!-- Browse item -->
+    <LinearLayout
+        android:id="@+id/nav_browse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_compass"
+            android:tint="#666666"
+            android:contentDescription="Browse" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Browse"
+            android:textColor="#666666"
+            android:textSize="16sp"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <!-- Search item -->
+    <LinearLayout
+        android:id="@+id/nav_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_search"
+            android:tint="#666666"
+            android:contentDescription="Search" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search"
+            android:textColor="#666666"
+            android:textSize="16sp"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <!-- Bottom section for settings and profile -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp">
+
+        <ImageButton
+            android:id="@+id/settings_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Settings"
+            android:src="@drawable/ic_settings"
+            android:tint="#333333" />
+
+        <ImageButton
+            android:id="@+id/voice_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Voice Search"
+            android:src="@drawable/ic_mic"
+            android:tint="#333333" />
+
+        <ImageView
+            android:id="@+id/profile_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/circular_profile_background"
+            android:contentDescription="User Profile"
+            android:scaleType="centerCrop" />
+    </LinearLayout>
+</LinearLayout>

@@ -10,8 +10,12 @@ import android.util.Log
 import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -105,98 +109,134 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         // Initialize ViewModel - Media3 version
         viewModel = ViewModelProvider(this)[MusicViewModel::class.java]
         
-        // Set up top navigation
-        setupTopNavigation()
+        // Ensure side navigation is visible first
+        findViewById<View>(R.id.sideNavigationContainer)?.visibility = View.VISIBLE
+        
+        // Set up side navigation
+        setupSideNavigation()
 
         // Setup mini player click listeners
         setupMiniPlayerControls()
+        
+        // Double check visibility after setup
+        findViewById<View>(R.id.sideNavigationContainer)?.visibility = View.VISIBLE
+        
+        // Update the settings and profile button actions from side navigation
+        findViewById<View>(R.id.sideNavigationContainer)?.let { sideNavContainer ->
+            sideNavContainer.findViewById<ImageButton>(R.id.settings_button)?.setOnClickListener {
+                // TODO: Implement settings dialog
+                Log.d(TAG, "Settings button clicked")
+            }
+            
+            // Changed from ImageButton to ImageView to match the XML layout
+            sideNavContainer.findViewById<ImageView>(R.id.profile_button)?.setOnClickListener {
+                // TODO: Implement user profile dialog
+                Log.d(TAG, "Profile button clicked")
+            }
+        }
     }
 
-    private fun setupTopNavigation() {
+    private fun setupSideNavigation() {
         // Default fragment
         if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) == null) {
             loadFragment(LibraryFragment())
         }
         
-        // Clear existing navigation buttons
-        binding.topNavigation.removeAllViews()
-        
-        // Add navigation buttons programmatically
-        val navItems = listOf(
-            Triple(R.id.nav_library, "Library", LibraryFragment::class.java),
-            Triple(R.id.nav_browse, "Browse", BrowseFragment::class.java),
-            Triple(R.id.nav_search, "Search", SearchFragment::class.java)
-        )
-        
-        // Create each pill-shaped button and add to the LinearLayout
-        navItems.forEachIndexed { index, (id, title, fragmentClass) ->
-            val button = createNavigationButton(title, index == 0)
-            button.id = id
-            
-            // Set click listener
-            button.setOnClickListener {
-                // Update button states with animation
-                for (i in 0 until binding.topNavigation.childCount) {
-                    val navButton = binding.topNavigation.getChildAt(i)
-                    val shouldBeSelected = (i == index)
-                    
-                    if (shouldBeSelected && !navButton.isSelected) {
-                        // Apply scale-up animation when selecting
-                        navButton.isSelected = true
-                        android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_up).apply {
-                            setTarget(navButton)
-                            start()
-                        }
-                    } else if (!shouldBeSelected && navButton.isSelected) {
-                        // Apply scale-down animation when deselecting
-                        navButton.isSelected = false
-                        android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_down).apply {
-                            setTarget(navButton)
-                            start()
-                        }
-                    }
-                }
-                
-                // Load the fragment
-                try {
-                    val fragment = fragmentClass.getDeclaredConstructor().newInstance() as Fragment
-                    loadFragment(fragment)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error creating fragment", e)
-                }
-            }
-            
-            // Add to the layout with proper spacing matching the design
-            val layoutParams = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                marginEnd = resources.getDimensionPixelSize(R.dimen.nav_button_margin)
-                gravity = android.view.Gravity.CENTER_VERTICAL
-            }
-            binding.topNavigation.addView(button, layoutParams)
+        // Get reference to the side navigation container
+        val sideNavContainer = findViewById<View>(R.id.sideNavigationContainer)
+        if (sideNavContainer == null) {
+            Log.e(TAG, "Side navigation container not found!")
+            return
         }
         
-        // Select the first button by default
-        binding.topNavigation.getChildAt(0).isSelected = true
+        // Ensure side navigation container is visible
+        sideNavContainer.visibility = View.VISIBLE
         
-        // Set up toolbar buttons
-        binding.settingsButton.setOnClickListener {
+        // Setup navigation item click listeners
+        setupNavigationItems(sideNavContainer)
+        
+        // Update the settings and voice button actions
+        sideNavContainer.findViewById<ImageButton>(R.id.settings_button)?.setOnClickListener {
             // TODO: Implement settings dialog
+            Log.d(TAG, "Settings button clicked")
         }
         
-        binding.profileButton.setOnClickListener {
-            // TODO: Implement user profile or sign in dialog
+        sideNavContainer.findViewById<ImageButton>(R.id.voice_button)?.setOnClickListener {
+            // TODO: Implement voice search
+            Log.d(TAG, "Voice search button clicked")
         }
         
-        // Make the Apple logo function as a home button
-        findViewById<ImageView>(R.id.apple_music_logo).setOnClickListener {
-            // Navigate to library screen and select the library tab
+        sideNavContainer.findViewById<ImageView>(R.id.profile_button)?.setOnClickListener {
+            // TODO: Implement user profile dialog
+            Log.d(TAG, "Profile button clicked")
+        }
+        
+        // Select the Library item by default
+        updateSelectedNavigationItem(R.id.nav_library)
+    }
+
+    private fun setupNavigationItems(container: View) {
+        // Library navigation
+        container.findViewById<LinearLayout>(R.id.nav_library)?.setOnClickListener {
             loadFragment(LibraryFragment())
             updateSelectedNavigationItem(R.id.nav_library)
         }
+        
+        // Browse navigation
+        container.findViewById<LinearLayout>(R.id.nav_browse)?.setOnClickListener {
+            loadFragment(BrowseFragment())
+            updateSelectedNavigationItem(R.id.nav_browse)
+        }
+        
+        // Search navigation
+        container.findViewById<LinearLayout>(R.id.nav_search)?.setOnClickListener {
+            loadFragment(SearchFragment())
+            updateSelectedNavigationItem(R.id.nav_search)
+        }
     }
     
+    /**
+     * Updates the selected state of navigation items
+     */
+    fun updateSelectedNavigationItem(itemId: Int) {
+        val sideNavContainer = findViewById<View>(R.id.sideNavigationContainer) ?: return
+        
+        val navItems = mapOf(
+            R.id.nav_library to sideNavContainer.findViewById<LinearLayout>(R.id.nav_library),
+            R.id.nav_browse to sideNavContainer.findViewById<LinearLayout>(R.id.nav_browse),
+            R.id.nav_search to sideNavContainer.findViewById<LinearLayout>(R.id.nav_search)
+        )
+        
+        // Update each navigation item
+        navItems.forEach { (id, layout) ->
+            val isSelected = id == itemId
+            updateNavigationItemAppearance(layout, isSelected)
+        }
+    }
+    
+    /**
+     * Updates the appearance of a navigation item based on selection state
+     */
+    private fun updateNavigationItemAppearance(layout: LinearLayout?, isSelected: Boolean) {
+        layout?.let {
+            // Find child views
+            val iconView = layout.getChildAt(0) as? ImageView
+            val textView = layout.getChildAt(1) as? TextView
+            
+            if (isSelected) {
+                // Selected state
+                layout.setBackgroundColor(ContextCompat.getColor(this, R.color.navigation_selected_bg))
+                iconView?.setColorFilter(ContextCompat.getColor(this, R.color.navigation_selected_tint))
+                textView?.setTextColor(ContextCompat.getColor(this, R.color.navigation_selected_text))
+            } else {
+                // Unselected state
+                layout.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                iconView?.setColorFilter(ContextCompat.getColor(this, R.color.navigation_unselected_tint))
+                textView?.setTextColor(ContextCompat.getColor(this, R.color.navigation_unselected_text))
+            }
+        }
+    }
+
     private fun loadFragment(fragment: Fragment) {
         val transaction = supportFragmentManager.beginTransaction()
             .setCustomAnimations(
@@ -244,6 +284,14 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     // MediaAwareActivity implementation
     override fun showMiniPlayer() {
         binding.miniPlayer.root.visibility = View.VISIBLE
+        
+        // When showing mini player, ensure side navigation is visible
+        findViewById<View>(R.id.sideNavigationContainer)?.visibility = View.VISIBLE
+        
+        // Adjust fragment container constraints
+        val params = binding.fragmentContainer.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        params.bottomToTop = binding.miniPlayer.root.id
+        binding.fragmentContainer.layoutParams = params
     }
     
     override fun hideMiniPlayer() {
@@ -253,6 +301,15 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
     override fun showNowPlaying() {
         // Hide mini player before showing the full player
         hideMiniPlayer()
+        
+        // Hide side navigation when showing now playing
+        findViewById<View>(R.id.sideNavigationContainer)?.visibility = View.GONE
+        
+        // Adjust fragment container to use full width
+        val fragmentParams = binding.fragmentContainer.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        fragmentParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+        binding.fragmentContainer.layoutParams = fragmentParams
+        
         loadFragment(NowPlayingFragment())
         // Don't select any navigation item as "Now Playing" is not part of bottom navigation
     }
@@ -288,119 +345,23 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         }
     }
     
-    /**
-     * Updates the selected button in the top navigation.
-     * This method is used by fragments to update the navigation UI.
-     */
-    fun updateSelectedNavigationItem(itemId: Int) {
-        // Find the button with the given ID and select it with animation
-        for (i in 0 until binding.topNavigation.childCount) {
-            val navButton = binding.topNavigation.getChildAt(i) as Button // Ensure it's a Button
-            val shouldBeSelected = (navButton.id == itemId)
-            
-            if (shouldBeSelected) {
-                navButton.isSelected = true
-                navButton.elevation = resources.getDimension(R.dimen.nav_button_elevation_selected)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    navButton.translationZ = resources.getDimension(R.dimen.nav_button_translationZ_selected)
-                }
-                android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_up).apply {
-                    setTarget(navButton)
-                    start()
-                }
-            } else {
-                navButton.isSelected = false
-                navButton.elevation = resources.getDimension(R.dimen.nav_button_elevation_normal)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    navButton.translationZ = 0f
-                }
-                android.animation.AnimatorInflater.loadAnimator(this, R.animator.nav_button_scale_down).apply {
-                    setTarget(navButton)
-                    start()
-                }
-            }
-        }
-    }
-    
-    /**
-     * Creates a pill-shaped navigation button matching Apple Music design
-     */
-    private fun createNavigationButton(text: String, isSelected: Boolean = false): Button {
-        return Button(this).apply {
-            this.text = text
-            isAllCaps = false
-            typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
-            
-            val horizontalPadding = resources.getDimensionPixelSize(R.dimen.nav_button_padding_horizontal)
-            val verticalPadding = resources.getDimensionPixelSize(R.dimen.nav_button_padding_vertical)
-            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
-
-            setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.nav_button_text_size))
-            setTextColor(ContextCompat.getColorStateList(this@MainActivity, R.color.nav_button_text_color))
-            background = ContextCompat.getDrawable(this@MainActivity, R.drawable.nav_button_background)
-
-            // Set initial elevation and shadow properties
-            elevation = resources.getDimension(R.dimen.nav_button_elevation_normal)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                outlineProvider = ViewOutlineProvider.BOUNDS // Ensures shadow follows rounded corners
-                outlineSpotShadowColor = ContextCompat.getColor(this@MainActivity, R.color.nav_button_shadow_normal)
-            }
-
-            // Set elevation and shadow properties based on selection state
-            isSelected(isSelected)
-
-            // Set click listener to update fragment
-            setOnClickListener {
-                // Update selected navigation item
-                (context as MainActivity).updateSelectedNavigationItem(this.id) // Pass button id
-            }
-        }
-    }
-
-    /**
-     * Updates the elevation and shadow properties of the button based on its selection state
-     */
-    private fun Button.isSelected(selected: Boolean) {
-        if (selected) {
-            // Set a small amount of elevation to add a subtle 3D effect
-            elevation = resources.getDimension(R.dimen.nav_button_elevation_selected)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                outlineProvider = ViewOutlineProvider.BOUNDS
-                outlineSpotShadowColor = ContextCompat.getColor(this@MainActivity, R.color.nav_button_shadow_selected)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                translationZ = resources.getDimension(R.dimen.nav_button_translationZ_selected)
-            }
-            // Start scale-up animation
-            android.animation.AnimatorInflater.loadAnimator(context, R.animator.nav_button_scale_up).apply {
-                setTarget(this@isSelected)
-                start()
-            }
-        } else {
-            // Default elevation for normal state
-            elevation = resources.getDimension(R.dimen.nav_button_elevation_normal)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                outlineSpotShadowColor = ContextCompat.getColor(this@MainActivity, R.color.nav_button_shadow_normal)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                translationZ = 0f
-            }
-            // Reset scale or start scale-down animation if it was previously scaled
-            android.animation.AnimatorInflater.loadAnimator(context, R.animator.nav_button_scale_down).apply {
-                setTarget(this@isSelected)
-                start()
-            }
-        }
-    }
-
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // Check if current fragment is NowPlayingFragment
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
         
         if (currentFragment is NowPlayingFragment) {
-            // If in now playing screen, show the mini player and pop back stack
+            // If in now playing screen, show the mini player and restore side navigation
             showMiniPlayer()
+            val sideNavContainer = findViewById<View>(R.id.sideNavigationContainer) ?: return
+            sideNavContainer.visibility = View.VISIBLE
+            
+            // Restore original fragment container constraints
+            val fragmentParams = binding.fragmentContainer.layoutParams as ConstraintLayout.LayoutParams
+            fragmentParams.startToStart = ConstraintLayout.LayoutParams.UNSET
+            fragmentParams.startToEnd = sideNavContainer.id
+            binding.fragmentContainer.layoutParams = fragmentParams
+            
             supportFragmentManager.popBackStack()
         } else if (supportFragmentManager.backStackEntryCount > 0) {
             // If there are entries in back stack, pop them
