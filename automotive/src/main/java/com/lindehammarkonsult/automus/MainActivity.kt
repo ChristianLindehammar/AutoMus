@@ -1,6 +1,6 @@
 package com.lindehammarkonsult.automus
 
-import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -8,8 +8,6 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.view.View
-import android.view.ViewOutlineProvider
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -22,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
 import com.lindehammarkonsult.automus.databinding.ActivityMainBinding
+import com.lindehammarkonsult.automus.shared.auth.AppleMusicAuthHelper
 import com.lindehammarkonsult.automus.ui.BrowseFragment
 import com.lindehammarkonsult.automus.ui.LibraryFragment
 import com.lindehammarkonsult.automus.ui.MediaAwareActivity
@@ -39,6 +38,7 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MusicViewModel
+    private lateinit var authHelper: AppleMusicAuthHelper
     
     // Legacy media browser (will be removed once migration is complete)
     private var mediaBrowser: MediaBrowserCompat? = null
@@ -109,6 +109,9 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         // Initialize ViewModel - Media3 version
         viewModel = ViewModelProvider(this)[MusicViewModel::class.java]
         
+        // Initialize Apple Music auth helper
+        authHelper = (application as AutoMusApplication).authHelper
+        
         // Ensure side navigation is visible first
         findViewById<View>(R.id.sideNavigationContainer)?.visibility = View.VISIBLE
         
@@ -130,10 +133,34 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             
             // Changed from ImageButton to ImageView to match the XML layout
             sideNavContainer.findViewById<ImageView>(R.id.profile_button)?.setOnClickListener {
-                // TODO: Implement user profile dialog
-                Log.d(TAG, "Profile button clicked")
+                // Check Apple Music authentication state using the auth helper
+                authHelper.showAuthenticationOptions(this)
             }
         }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // Let the auth helper handle authentication results
+        if (::authHelper.isInitialized && authHelper.handleAuthResult(requestCode, resultCode, data)) {
+            // Auth helper handled the result, check if we need to update UI or reconnect
+            if (requestCode == AppleMusicAuthHelper.REQUEST_APPLE_MUSIC_AUTH && 
+                resultCode == com.lindehammarkonsult.automus.shared.ui.AppleMusicAuthActivity.RESULT_AUTH_SUCCESS) {
+                // Auth was successful, update UI or reconnect to media service
+                refreshMediaConnection()
+            }
+            return
+        }
+        
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+    
+    /**
+     * Refresh the media connection after successful authentication
+     */
+    private fun refreshMediaConnection() {
+        // Reconnect to the media service
+        viewModel.reconnect()
     }
 
     private fun setupSideNavigation() {

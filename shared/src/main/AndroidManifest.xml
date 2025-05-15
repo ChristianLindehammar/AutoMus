@@ -38,6 +38,22 @@
             android:exported="false"
             android:label="@string/apple_music_auth_title"
             android:theme="@style/Theme.AppCompat" />
+            
+        <!-- Apple Music Authentication Callback Activity -->
+        <activity
+            android:name=".auth.AppleMusicAuthCallbackActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="automus"
+                    android:host="oauth-callback" />
+            </intent-filter>
+        </activity>
 
     </application>
 

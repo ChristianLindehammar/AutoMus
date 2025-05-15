@@ -57,8 +57,8 @@ class AppleMusicAuthActivity : ComponentActivity() {
         authManager = AppleMusicAuthManager(
             context = this,
             developerToken = BuildConfig.APPLE_MUSIC_DEVELOPER_TOKEN,
-            clientId = BuildConfig.APPLE_MUSIC_CLIENT_ID,
-            clientSecret = BuildConfig.APPLE_MUSIC_CLIENT_SECRET
+            clientId = BuildConfig.APPLE_MUSIC_CLIENT_ID
+            // Client secret is not needed when using the Apple Music SDK
         )
         
         // Set up login button
@@ -163,5 +163,22 @@ class AppleMusicAuthActivity : ComponentActivity() {
     private fun finishWithCanceled() {
         setResult(RESULT_AUTH_CANCELED)
         finish()
+    }
+    
+    /**
+     * Handle activity result from the Apple Music SDK authentication flow
+     */
+    @Suppress("DEPRECATION") // onActivityResult is deprecated but still used by the SDK
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
+        // Let the auth manager handle the authentication result
+        if (authManager.handleAuthResult(requestCode, resultCode, data)) {
+            // Auth manager has handled the result
+            Log.d(TAG, "Auth result handled by AuthManager")
+        } else {
+            // Auth manager did not handle the result
+            Log.d(TAG, "Auth result not handled by AuthManager")
+        }
     }
 }

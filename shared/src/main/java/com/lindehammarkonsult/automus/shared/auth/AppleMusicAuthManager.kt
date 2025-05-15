@@ -2,30 +2,25 @@ package com.lindehammarkonsult.automus.shared.auth
 
 import android.app.Activity
 import android.content.Context
-import android.net.Uri
+import android.content.Intent
 import android.util.Log
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
+import com.apple.android.sdk.authentication.AuthenticationFactory
+import com.apple.android.sdk.authentication.AuthenticationManager
+import com.apple.android.sdk.authentication.TokenResult
 
 private const val TAG = "AppleMusicAuthManager"
-private const val APPLE_AUTH_URL = "https://authorize.music.apple.com/oauth"
-private const val APPLE_TOKEN_URL = "https://api.music.apple.com/oauth/token"
-private const val REDIRECT_URI = "automus://oauth-callback"
+private const val REQUEST_CODE_APPLE_MUSIC_AUTH = 3456
 
 /**
- * Manager class for handling Apple Music authentication flow
+ * Manager class for handling Apple Music authentication flow using the official Apple SDK
  */
 class AppleMusicAuthManager(
     private val context: Context,
     private val developerToken: String,
-    private val clientId: String,
-    private val clientSecret: String
+    private val clientId: String = "", // Not needed with the SDK approach
+    private val clientSecret: String = "" // Not needed with the SDK approach
 ) {
     /**
      * Authentication state representation
@@ -41,13 +36,18 @@ class AppleMusicAuthManager(
     // Token provider to store and provide tokens
     val tokenProvider = AppleMusicTokenProvider(context)
     
+    // Apple's Authentication Manager instance
+    private val authenticationManager: AuthenticationManager by lazy {
+        AuthenticationFactory.createAuthenticationManager(context)
+    }
+    
     // LiveData for auth state
     private val _authState = MutableLiveData<AuthState>(AuthState.Idle)
     val authState: LiveData<AuthState> = _authState
     
     init {
-        // Set the developer token in the token provider
-        tokenProvider.setDeveloperToken(developerToken)
+        // The token provider now automatically initializes with the BuildConfig token
+        // We don't need to explicitly set the developer token here
         
         // Register token provider with MusicKit
         // Note: The Apple Music SDK has been configured to use this token provider elsewhere
@@ -59,130 +59,79 @@ class AppleMusicAuthManager(
      */
     fun initialize() {
         Log.d(TAG, "Initializing Apple Music Auth Manager")
-        // Validate developer token
-        if (developerToken.isEmpty() || developerToken == "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE") {
+        
+        // Validate that a developer token is available (either from prefs or BuildConfig)
+        if (!tokenProvider.hasDeveloperToken()) {
             Log.w(TAG, "Developer token is missing or invalid")
             _authState.value = AuthState.Error("Developer token is missing or invalid")
-        } else {
-            // Set the developer token in the token provider (again to ensure it's set)
-            tokenProvider.setDeveloperToken(developerToken)
+            return
+        }
             
-            // Attempt to restore any previously saved user token
-            val userToken = tokenProvider.getUserToken()
-            if (!userToken.isNullOrEmpty()) {
-                Log.d(TAG, "Restored previous user authentication")
-                _authState.value = AuthState.Authenticated
-            } else {
-                _authState.value = AuthState.Idle
-            }
+        // Attempt to restore any previously saved user token
+        val userToken = tokenProvider.getUserToken()
+        if (!userToken.isNullOrEmpty()) {
+            Log.d(TAG, "Restored previous user authentication")
+            _authState.value = AuthState.Authenticated
+        } else {
+            _authState.value = AuthState.Idle
         }
     }
     
     /**
-     * Initiate the OAuth authentication flow for Apple Music from an Activity
+     * Initiate the authentication flow for Apple Music using the Apple SDK
      */
     fun authenticate(activity: Activity) {
-        Log.d(TAG, "Starting authentication from activity")
+        Log.d(TAG, "Starting authentication from activity using Apple SDK")
         _authState.value = AuthState.Authenticating
         
-        startAuthFlow { success ->
-            // This callback will be triggered after the authorization flow completes
-            if (success) {
-                Log.d(TAG, "Authentication completed successfully")
-                _authState.postValue(AuthState.Authenticated)
-            } else {
-                Log.e(TAG, "Authentication failed")
-                _authState.postValue(AuthState.Error("Authentication failed"))
-            }
-        }
-    }
-    
-    /**
-     * Initiate the OAuth authentication flow for Apple Music
-     */
-    fun startAuthFlow(callback: (Boolean) -> Unit) {
         try {
-            // Construct OAuth authorization URL
-            val authUrl = Uri.parse(APPLE_AUTH_URL).buildUpon()
-                .appendQueryParameter("app_id", context.packageName)
-                .appendQueryParameter("client_id", clientId)
-                .appendQueryParameter("redirect_uri", REDIRECT_URI)
-                .appendQueryParameter("response_type", "code")
-                .appendQueryParameter("scope", "musicKit")
+            // Create the authentication intent using the Apple SDK's AuthenticationManager
+            val intent = authenticationManager.createIntentBuilder(developerToken)
+                .setHideStartScreen(false) // Show the Apple Music authentication start screen
+                .setStartScreenMessage("Connect AutoMus to your Apple Music account")
                 .build()
-                
-            // Launch Custom Tab for authentication
-            val customTabsIntent = CustomTabsIntent.Builder()
-                .setShowTitle(true)
-                .build()
-                
-            customTabsIntent.launchUrl(context, authUrl)
             
-            // Note: The auth callback must be handled by an Activity that catches the redirect URI
-            // See AppleMusicAuthCallbackActivity for implementation
-            Log.d(TAG, "Authentication flow started")
+            // Start the authentication activity
+            activity.startActivityForResult(intent, REQUEST_CODE_APPLE_MUSIC_AUTH)
+            Log.d(TAG, "Started Apple Music authentication activity")
             
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting authentication flow: ${e.message}", e)
-            callback(false)
+            Log.e(TAG, "Error starting Apple Music authentication: ${e.message}", e)
+            _authState.postValue(AuthState.Error("Failed to start authentication: ${e.message}"))
         }
     }
     
     /**
-     * Handle the authorization code received from OAuth redirect
-     * This should be called from the redirect Activity
+     * Handle the authentication result from the Apple SDK
+     * Call this from your activity's onActivityResult
      */
-    suspend fun handleAuthorizationCode(code: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                Log.d(TAG, "Processing authorization code")
+    fun handleAuthResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode != REQUEST_CODE_APPLE_MUSIC_AUTH) return false
+        
+        if (data != null) {
+            val tokenResult = authenticationManager.handleTokenResult(data)
+            if (!tokenResult.isError) {
+                // Authentication successful
+                val musicUserToken = tokenResult.musicUserToken
                 
-                // Exchange authorization code for user token
-                val url = URL(APPLE_TOKEN_URL)
-                val connection = url.openConnection() as HttpsURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-                connection.setRequestProperty("Authorization", "Bearer $developerToken")
-                connection.doOutput = true
+                // Store the user token securely
+                tokenProvider.setUserToken(musicUserToken)
                 
-                // Prepare request body
-                val requestBody = "grant_type=authorization_code" +
-                                 "&code=$code" +
-                                 "&client_id=$clientId" +
-                                 "&client_secret=$clientSecret" +
-                                 "&redirect_uri=$REDIRECT_URI"
-                                 
-                // Write request body
-                val outputStream = connection.outputStream
-                outputStream.write(requestBody.toByteArray())
-                outputStream.flush()
-                outputStream.close()
-                
-                val responseCode = connection.responseCode
-                if (responseCode == HttpsURLConnection.HTTP_OK) {
-                    // Parse response
-                    val response = connection.inputStream.bufferedReader().use { it.readText() }
-                    val jsonResponse = JSONObject(response)
-                    
-                    val userToken = jsonResponse.getString("music_user_token")
-                    val expiresIn = jsonResponse.getInt("expires_in")
-                    
-                    // Store the user token securely
-                    tokenProvider.userToken = userToken
-                    
-                    Log.d(TAG, "Authentication successful, token expires in $expiresIn seconds")
-                    
-                    // The token provider is already registered with appropriate components
-                    true
-                } else {
-                    val errorResponse = connection.errorStream?.bufferedReader()?.use { it.readText() }
-                    Log.e(TAG, "Authentication failed: $responseCode, $errorResponse")
-                    false
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error exchanging authorization code: ${e.message}", e)
-                false
+                Log.d(TAG, "Authentication successful, received music user token")
+                _authState.value = AuthState.Authenticated
+                return true
+            } else {
+                // Authentication failed
+                val error = tokenResult.error
+                Log.e(TAG, "Authentication error: ${error.name}")
+                _authState.value = AuthState.Error("Authentication failed: ${error.name}")
+                return false
             }
+        } else {
+            // User canceled authentication
+            Log.d(TAG, "Authentication was canceled or failed (no data returned)")
+            _authState.value = AuthState.Canceled
+            return false
         }
     }
     
@@ -199,7 +148,7 @@ class AppleMusicAuthManager(
      * Logout the current user
      */
     fun logout() {
-        tokenProvider.userToken = null
+        tokenProvider.setUserToken(null)
         Log.d(TAG, "User logged out")
         _authState.value = AuthState.Idle
     }

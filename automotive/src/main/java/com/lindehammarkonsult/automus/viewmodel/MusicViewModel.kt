@@ -21,6 +21,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     // Media3 ViewModel for handling Media3 interactions
     private val media3ViewModel = Media3ViewModel(application)
     
+    // Media3 client instance for direct control
+    private val appleMusicClient = AppleMusicClient(application)
+    
     // Connection state
     private val _isConnected = MutableLiveData<Boolean>()
     val isConnected: LiveData<Boolean> = _isConnected
@@ -265,6 +268,36 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun refreshMedia3Items() {
         media3ViewModel.refreshMediaItems()
+    }
+    
+    /**
+     * Connect to the media service
+     */
+    private fun connectToMediaService() {
+        // Connect using Media3 ViewModel
+        media3ViewModel.connectToService()
+        
+        // Also connect via Apple Music Client for direct control
+        appleMusicClient.connect()
+    }
+    
+    /**
+     * Reconnect to the media service after authentication changes
+     * Should be called when the user logs in or out
+     */
+    fun reconnect() {
+        // Disconnect and reconnect Media3 client
+        media3ViewModel.disconnectFromService()
+        appleMusicClient.disconnect()
+        
+        // Short delay before reconnecting
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
+            connectToMediaService()
+            
+            // Load root media items to refresh the UI
+            media3ViewModel.refreshMediaItems()
+        }
     }
     
     override fun onCleared() {
