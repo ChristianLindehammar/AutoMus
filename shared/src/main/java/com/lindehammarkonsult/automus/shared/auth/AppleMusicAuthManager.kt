@@ -46,11 +46,23 @@ class AppleMusicAuthManager(
     val authState: LiveData<AuthState> = _authState
     
     init {
-        // The token provider now automatically initializes with the BuildConfig token
-        // We don't need to explicitly set the developer token here
-        
-        // Register token provider with MusicKit
-        // Note: The Apple Music SDK has been configured to use this token provider elsewhere
+        // Check and log developer token status
+        if (developerToken.isBlank() || developerToken == "YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE") {
+            Log.w(TAG, "Invalid developer token provided to AppleMusicAuthManager")
+            _authState.value = AuthState.Error("Invalid developer token")
+        } else {
+            // Log token preview for debugging (only partial to maintain security)
+            val tokenPreview = if (developerToken.length > 10) {
+                "${developerToken.substring(0, 5)}...${developerToken.substring(developerToken.length - 5)}"
+            } else {
+                "Invalid token format"
+            }
+            Log.d(TAG, "Initializing with developer token: $tokenPreview")
+            
+            // The token provider automatically initializes with the BuildConfig token
+            // We'll set it explicitly here to ensure it's using the correct one
+            tokenProvider.setDeveloperToken(developerToken)
+        }
     }
     
     /**

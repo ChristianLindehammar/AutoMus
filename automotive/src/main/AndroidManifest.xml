@@ -27,6 +27,17 @@
             </intent-filter>
         </activity>
         
+        <!-- Test activity for Apple Music authentication -->
+        <activity
+            android:name=".AppleMusicAuthTestActivity"
+            android:exported="true"
+            android:label="Apple Music Auth Test">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.SAMPLE_CODE" />
+            </intent-filter>
+        </activity>
+        
         <activity
             android:name="com.apple.android.sdk.authentication.SDKUriHandlerActivity"
             android:exported="true">

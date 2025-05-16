@@ -4,6 +4,15 @@ plugins {
     id 'kotlin-parcelize'  // Add this for Parcelize feature
 }
 
+// Load local.properties
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
 android {
     namespace 'com.lindehammarkonsult.automus.shared'
     defaultConfig {
@@ -15,11 +24,25 @@ android {
         
         // Add BuildConfig fields for Apple Music authentication
         // Developer token is required for API access
-        buildConfigField "String", "APPLE_MUSIC_DEVELOPER_TOKEN", properties.getOrDefault("APPLE_MUSIC_DEVELOPER_TOKEN", "\"YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE\"")
+        buildConfigField "String", "APPLE_MUSIC_DEVELOPER_TOKEN", 
+            localProperties.getProperty('APPLE_MUSIC_DEVELOPER_TOKEN') ? 
+            "\"${localProperties.getProperty('APPLE_MUSIC_DEVELOPER_TOKEN')}\"" : 
+            "\"YOUR_APPLE_MUSIC_DEVELOPER_TOKEN_HERE\""
+        
         // Client ID is your service ID registered in Apple Developer Portal
-        buildConfigField "String", "APPLE_MUSIC_CLIENT_ID", properties.getOrDefault("APPLE_MUSIC_CLIENT_ID", "\"YOUR_APPLE_MUSIC_CLIENT_ID_HERE\"")
+        buildConfigField "String", "APPLE_MUSIC_CLIENT_ID", 
+            localProperties.getProperty('APPLE_MUSIC_CLIENT_ID') ? 
+            "\"${localProperties.getProperty('APPLE_MUSIC_CLIENT_ID')}\"" : 
+            "\"YOUR_APPLE_MUSIC_CLIENT_ID_HERE\""
+            
         // Client secret is not used with the SDK but kept for future reference
-        buildConfigField "String", "APPLE_MUSIC_CLIENT_SECRET", properties.getOrDefault("APPLE_MUSIC_CLIENT_SECRET", "\"YOUR_APPLE_MUSIC_CLIENT_SECRET_HERE\"")
+        buildConfigField "String", "APPLE_MUSIC_CLIENT_SECRET", 
+            localProperties.getProperty('APPLE_MUSIC_CLIENT_SECRET') ? 
+            "\"${localProperties.getProperty('APPLE_MUSIC_CLIENT_SECRET')}\"" : 
+            "\"YOUR_APPLE_MUSIC_CLIENT_SECRET_HERE\""
+        
+        // Add placeholder for manifest merger
+        manifestPlaceholders = [appleMusicSDKUriHandlerExported: "true"]
     }
     
     kotlinOptions {
@@ -47,6 +70,7 @@ dependencies {
     // UI Components
     implementation libs.androidx.constraintlayout  // Add ConstraintLayout from version catalog
     implementation libs.androidx.constraintlayout.v214  // Direct dependency as backup
+    implementation 'com.google.android.material:material:1.10.0'  // Material Components
     
     // Media3 dependencies
     implementation libs.androidx.media3.exoplayer
@@ -105,4 +129,7 @@ dependencies {
     androidTestImplementation libs.androidx.espresso.core
     
     coreLibraryDesugaring libs.desugar.jdk.libs
+
+    // ZXing for QR code generation
+    implementation 'com.google.zxing:core:3.5.2'
 }

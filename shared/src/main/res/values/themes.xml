@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Theme attributes for shared module -->
+    <style name="Theme.AutoMus.Shared" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Text appearances -->
+        <item name="textAppearanceHeadline5">@style/TextAppearance.AutoMus.Headline5</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.AutoMus.Body1</item>
+    </style>
+</resources>

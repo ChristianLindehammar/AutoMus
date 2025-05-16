@@ -88,7 +88,9 @@ class AppleMusicClient(private val context: Context) {
      * Disconnect from the media service
      */
     fun disconnect() {
-        MediaController.releaseFuture(browserFuture)
+        if (::browserFuture.isInitialized) {
+            MediaController.releaseFuture(browserFuture)
+        }
         mediaBrowser = null
     }
     

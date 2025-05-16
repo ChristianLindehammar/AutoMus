@@ -140,12 +140,46 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- User profile section -->
+    <LinearLayout
+        android:id="@+id/profile_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
+
+        <!-- User info (visible when logged in) -->
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Not signed in"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/login_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tap to sign in"
+            android:textColor="#666666"
+            android:textSize="10sp"
+            android:gravity="center"
+            android:layout_marginTop="4dp"
+            android:visibility="visible" />
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="8dp">
 
         <ImageButton
             android:id="@+id/settings_button"
@@ -167,12 +201,26 @@
             android:src="@drawable/ic_mic"
             android:tint="#333333" />
 
-        <ImageView
-            android:id="@+id/profile_button"
+        <FrameLayout
+            android:id="@+id/profile_container"
             android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:background="@drawable/circular_profile_background"
-            android:contentDescription="User Profile"
-            android:scaleType="centerCrop" />
+            android:layout_height="28dp">
+
+            <ImageView
+                android:id="@+id/profile_button"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="@drawable/circular_profile_background"
+                android:contentDescription="User Profile"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/login_indicator"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/login_indicator_background"
+                android:visibility="gone" />
+        </FrameLayout>
     </LinearLayout>
 </LinearLayout>

@@ -20,9 +20,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
 import com.lindehammarkonsult.automus.databinding.ActivityMainBinding
+import com.lindehammarkonsult.automus.shared.R as SharedR
 import com.lindehammarkonsult.automus.shared.auth.AppleMusicAuthHelper
 import com.lindehammarkonsult.automus.ui.BrowseFragment
 import com.lindehammarkonsult.automus.ui.LibraryFragment
+import com.lindehammarkonsult.automus.ui.LoginPromptFragment
 import com.lindehammarkonsult.automus.ui.MediaAwareActivity
 import com.lindehammarkonsult.automus.ui.NowPlayingFragment
 import com.lindehammarkonsult.automus.ui.SearchFragment
@@ -34,11 +36,17 @@ private const val TAG = "MainActivity"
  * Main activity for the Apple Music Android Automotive application
  */
 @UnstableApi
-class MainActivity : AppCompatActivity(), MediaAwareActivity {
+class MainActivity : AppCompatActivity(), MediaAwareActivity, AppleMusicAuthHelper.AuthStateListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MusicViewModel
     private lateinit var authHelper: AppleMusicAuthHelper
+    
+    // UI elements for profile section
+    private var profileButton: ImageView? = null
+    private var loginIndicator: ImageView? = null
+    private var userName: TextView? = null
+    private var loginStatus: TextView? = null
     
     // Legacy media browser (will be removed once migration is complete)
     private var mediaBrowser: MediaBrowserCompat? = null
@@ -124,50 +132,152 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
         // Double check visibility after setup
         findViewById<View>(R.id.sideNavigationContainer)?.visibility = View.VISIBLE
         
-        // Update the settings and profile button actions from side navigation
+        // Get references to profile UI elements
         findViewById<View>(R.id.sideNavigationContainer)?.let { sideNavContainer ->
+            profileButton = sideNavContainer.findViewById(R.id.profile_button)
+            loginIndicator = sideNavContainer.findViewById(R.id.login_indicator)
+            userName = sideNavContainer.findViewById(R.id.user_name)
+            loginStatus = sideNavContainer.findViewById(R.id.login_status)
+            
+            // Set up profile button click listener
+            sideNavContainer.findViewById<View>(R.id.profile_container)?.setOnClickListener {
+                // Check Apple Music authentication state using the auth helper
+                authHelper.showAuthenticationOptions(this)
+            }
+            
+            // Set up settings button
             sideNavContainer.findViewById<ImageButton>(R.id.settings_button)?.setOnClickListener {
                 // TODO: Implement settings dialog
                 Log.d(TAG, "Settings button clicked")
             }
-            
-            // Changed from ImageButton to ImageView to match the XML layout
-            sideNavContainer.findViewById<ImageView>(R.id.profile_button)?.setOnClickListener {
-                // Check Apple Music authentication state using the auth helper
-                authHelper.showAuthenticationOptions(this)
-            }
         }
+        
+        // Update UI based on current auth state
+        updateAuthUI()
     }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // Let the auth helper handle authentication results
-        if (::authHelper.isInitialized && authHelper.handleAuthResult(requestCode, resultCode, data)) {
-            // Auth helper handled the result, check if we need to update UI or reconnect
-            if (requestCode == AppleMusicAuthHelper.REQUEST_APPLE_MUSIC_AUTH && 
-                resultCode == com.lindehammarkonsult.automus.shared.ui.AppleMusicAuthActivity.RESULT_AUTH_SUCCESS) {
-                // Auth was successful, update UI or reconnect to media service
-                refreshMediaConnection()
+        // For QR auth results, check if we need to handle them specially
+        if (requestCode == AppleMusicAuthHelper.REQUEST_APPLE_MUSIC_AUTH) {
+            Log.d(TAG, "Received activity result from auth flow: resultCode=$resultCode")
+            
+            // Check if this is a simulated authentication result
+            if (data?.getBooleanExtra("is_simulated_auth", false) == true) {
+                Log.d(TAG, "Handling simulated authentication result")
+                // For simulated auth, only update UI without reconnecting media service
+                updateAuthUI()
+                return
             }
-            return
+        }
+            
+        // Let the auth helper handle authentication results
+        try {
+            if (::authHelper.isInitialized && authHelper.handleAuthResult(requestCode, resultCode, data, this)) {
+                // Auth helper handled the result
+                // The AuthStateListener.onAuthStateChanged will be called if authentication was successful
+                // We'll still update UI here in case the listener wasn't called
+                updateAuthUI()
+                return
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling authentication result", e)
         }
         
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    /**
+     * Update UI elements based on current authentication state
+     */
+    private fun updateAuthUI() {
+        val isAuthenticated = authHelper.isAuthenticated()
+        
+        // First, update the navigation UI elements for logged-in state
+        // Update login indicator
+        loginIndicator?.visibility = if (isAuthenticated) View.VISIBLE else View.GONE
+        
+        // Update profile button background color
+        profileButton?.setBackgroundResource(
+            if (isAuthenticated) R.drawable.profile_logged_in_background 
+            else R.drawable.circular_profile_background
+        )
+        
+        // Update user name and login status
+        if (isAuthenticated) {
+            userName?.visibility = View.VISIBLE
+            userName?.text = getString(SharedR.string.apple_music_user)
+            loginStatus?.text = getString(SharedR.string.tap_to_manage_account)
+            
+            // User is authenticated, show the main content
+            showMainContent()
+        } else {
+            userName?.visibility = View.GONE
+            loginStatus?.text = getString(SharedR.string.tap_to_sign_in)
+            
+            // User is not authenticated, show the login prompt
+            showLoginPrompt()
+        }
+    }
+    
+    /**
+     * Show the main content (Library Fragment by default)
+     */
+    private fun showMainContent() {
+        // Check if currently showing login fragment
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+        if (currentFragment is LoginPromptFragment) {
+            // Load the default fragment (Library)
+            loadFragment(LibraryFragment())
+            updateSelectedNavigationItem(R.id.nav_library)
+        }
+        
+        // Enable navigation items
+        findViewById<View>(R.id.sideNavigationContainer)?.let { container ->
+            container.findViewById<LinearLayout>(R.id.nav_library)?.isEnabled = true
+            container.findViewById<LinearLayout>(R.id.nav_browse)?.isEnabled = true
+            container.findViewById<LinearLayout>(R.id.nav_search)?.isEnabled = true
+        }
+    }
+    
+    /**
+     * Show the login prompt fragment 
+     */
+    private fun showLoginPrompt() {
+        // Load the login prompt fragment
+        loadFragment(LoginPromptFragment.newInstance())
+        
+        // Disable navigation items while showing login prompt
+        findViewById<View>(R.id.sideNavigationContainer)?.let { container ->
+            container.findViewById<LinearLayout>(R.id.nav_library)?.isEnabled = false
+            container.findViewById<LinearLayout>(R.id.nav_browse)?.isEnabled = false
+            container.findViewById<LinearLayout>(R.id.nav_search)?.isEnabled = false
+        }
+        
+        // Hide the mini player if visible
+        hideMiniPlayer()
     }
     
     /**
      * Refresh the media connection after successful authentication
      */
     private fun refreshMediaConnection() {
-        // Reconnect to the media service
-        viewModel.reconnect()
+        try {
+            // Only reconnect if we have a valid token
+            if (authHelper.isAuthenticated()) {
+                // Reconnect to the media service
+                viewModel.reconnect()
+            } else {
+                Log.w(TAG, "Not refreshing connection - no valid authentication")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error refreshing media connection", e)
+        }
     }
 
     private fun setupSideNavigation() {
-        // Default fragment
-        if (supportFragmentManager.findFragmentById(R.id.fragmentContainer) == null) {
-            loadFragment(LibraryFragment())
-        }
+        // Setup without loading default fragments - we'll do that in updateAuthUI
+        // based on authentication state
         
         // Get reference to the side navigation container
         val sideNavContainer = findViewById<View>(R.id.sideNavigationContainer)
@@ -193,12 +303,7 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             Log.d(TAG, "Voice search button clicked")
         }
         
-        sideNavContainer.findViewById<ImageView>(R.id.profile_button)?.setOnClickListener {
-            // TODO: Implement user profile dialog
-            Log.d(TAG, "Profile button clicked")
-        }
-        
-        // Select the Library item by default
+        // Select the Library item as default navigation selection
         updateSelectedNavigationItem(R.id.nav_library)
     }
 
@@ -398,5 +503,47 @@ class MainActivity : AppCompatActivity(), MediaAwareActivity {
             @Suppress("DEPRECATION")
             super.onBackPressed()
         }
+    }
+    
+    /**
+     * Implementation of AuthStateListener interface
+     */
+    override fun onAuthStateChanged(isAuthenticated: Boolean) {
+        updateAuthUI()
+        if (isAuthenticated) {
+            try {
+                // Reconnect to media service with new auth token only if properly authenticated
+                // and we have a valid token
+                if (authHelper.isAuthenticated()) {
+                    Log.d(TAG, "Authentication successful, refreshing media connection")
+                    refreshMediaConnection()
+                } else {
+                    Log.w(TAG, "Authentication reported as successful but isAuthenticated() returns false")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error refreshing media connection after auth", e)
+            }
+        } else {
+            // Handle logout - possibly clear cached data or reset UI
+            try {
+                viewModel.clearCache()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error clearing cache after logout", e)
+            }
+        }
+    }
+    
+    /**
+     * Start the Apple Music login flow
+     * This is called from the LoginPromptFragment
+     */
+    fun startAppleMusicLogin() {
+        authHelper.startLogin(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Update authentication UI state in case it has changed while app was in background
+        updateAuthUI()
     }
 }

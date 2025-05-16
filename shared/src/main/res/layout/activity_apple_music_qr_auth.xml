@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#212121"
+    tools:context=".ui.AppleMusicQRAuthActivity">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.8">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/text_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/apple_music_auth_title"
+            android:textAppearance="?attr/textAppearanceHeadline5"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Apple Music logo -->
+        <FrameLayout
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:background="@drawable/qr_code_background"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp">
+            
+            <ImageView
+                android:id="@+id/apple_music_logo"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_apple_music"
+                android:contentDescription="Apple Music Logo" />
+        </FrameLayout>
+
+        <!-- Status text -->
+        <TextView
+            android:id="@+id/text_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="@string/tap_to_connect"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+
+        <!-- Progress indicator -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="invisible"
+            android:indeterminateTint="#FFFFFF" />
+            
+        <!-- Authenticate button -->
+        <Button
+            android:id="@+id/btn_authenticate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/connect_with_apple_music"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:visibility="visible"
+            android:backgroundTint="#FF2D55" />
+
+        <!-- Description and instructions -->
+        <TextView
+            android:id="@+id/text_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:text="@string/connect_description"
+            android:textColor="#CCCCCC"
+            android:textAppearance="?attr/textAppearanceBody1" />
+
+        <!-- Cancel button -->
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/cancel"
+            android:textAllCaps="true"
+            android:textColor="#CCCCCC"
+            android:background="@android:color/transparent" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

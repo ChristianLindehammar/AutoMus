@@ -5,6 +5,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +16,8 @@ import com.lindehammarkonsult.automus.shared.utils.MediaItemConverter
 import com.lindehammarkonsult.automus.shared.viewmodel.Media3ViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
+private const val TAG = "MusicViewModel"
 
 class MusicViewModel(application: Application) : AndroidViewModel(application) {
     
@@ -286,18 +289,64 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
      * Should be called when the user logs in or out
      */
     fun reconnect() {
-        // Disconnect and reconnect Media3 client
-        media3ViewModel.disconnectFromService()
-        appleMusicClient.disconnect()
-        
-        // Short delay before reconnecting
-        viewModelScope.launch {
-            kotlinx.coroutines.delay(500)
-            connectToMediaService()
+        try {
+            Log.d(TAG, "Reconnecting media service")
             
-            // Load root media items to refresh the UI
-            media3ViewModel.refreshMediaItems()
+            // Safely disconnect Media3 client
+            try {
+                media3ViewModel.disconnectFromService()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error disconnecting Media3 service", e)
+            }
+            
+            // Safely disconnect Apple Music client
+            try {
+                appleMusicClient.disconnect()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error disconnecting Apple Music client", e)
+            }
+            
+            // Short delay before reconnecting
+            viewModelScope.launch {
+                try {
+                    kotlinx.coroutines.delay(500)
+                    
+                    Log.d(TAG, "Reconnecting to media service after delay")
+                    connectToMediaService()
+                    
+                    // Load root media items to refresh the UI
+                    media3ViewModel.refreshMediaItems()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in reconnection after delay", e)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in reconnect process", e)
         }
+    }
+    
+    /**
+     * Clear any cached data when the user logs out
+     */
+    fun clearCache() {
+        // Reset media items
+        _media3Items.postValue(emptyList())
+        _mediaItems.postValue(emptyList())
+        
+        // Clear any user-specific playlists and content
+        _playlists.postValue(emptyList())
+        _likedSongs.postValue(emptyList())
+        _recentlyPlayedItems.postValue(emptyList())
+        _searchResults.postValue(emptyList())
+        
+        // Clear metadata to prevent showing previously playing content
+        _metadata.postValue(null)
+        
+        // Reset playback state 
+        val idleState = PlaybackStateCompat.Builder()
+            .setState(PlaybackStateCompat.STATE_NONE, 0, 0f)
+            .build()
+        _playbackState.postValue(idleState)
     }
     
     override fun onCleared() {

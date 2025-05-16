@@ -1,4 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- Remove conflicting declarations from Apple's SDK -->
+    <application>
+        <activity android:name="com.apple.android.sdk.authentication.SDKUriHandlerActivity"
+                 tools:node="remove" />
+    </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -37,7 +44,14 @@
             android:name=".ui.AppleMusicAuthActivity"
             android:exported="false"
             android:label="@string/apple_music_auth_title"
-            android:theme="@style/Theme.AppCompat" />
+            android:theme="@style/Theme.AutoMus.Shared" />
+            
+        <!-- QR-based Apple Music Authentication Activity -->
+        <activity
+            android:name=".ui.AppleMusicQRAuthActivity"
+            android:exported="false"
+            android:label="@string/apple_music_auth_title"
+            android:theme="@style/Theme.AutoMus.Shared" />
             
         <!-- Apple Music Authentication Callback Activity -->
         <activity
@@ -52,6 +66,18 @@
                 <data
                     android:scheme="automus"
                     android:host="oauth-callback" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Explicit declaration of SDK Handler Activity to fix manifest merger issue -->
+        <activity
+            android:name="com.apple.android.sdk.authentication.SDKUriHandlerActivity"
+            android:exported="true"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
 

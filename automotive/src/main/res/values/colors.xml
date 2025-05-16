@@ -20,6 +20,12 @@
     <color name="nav_button_text_normal">#5F5F5F</color> <!-- Dark grey for normal nav button text -->
     <color name="nav_button_border_normal">#E0E0E0</color> <!-- Light grey for normal nav button border -->
     
+    <!-- Authentication status colors -->
+    <color name="logged_in_indicator">#4CD964</color> <!-- Green for logged in state -->
+    <color name="logged_out_indicator">#FF3B30</color> <!-- Red for logged out state -->
+    <color name="profile_background_logged_in">#E7F8E6</color> <!-- Light green for logged-in profile background -->
+    <color name="profile_background_logged_out">#DDDDDD</color> <!-- Gray for logged-out profile background -->
+    
     <!-- Shadow Colors for Elevation -->
     <color name="nav_button_shadow_selected">#AAFF2D55</color> <!-- 67% alpha of Apple Music Red -->
     <!-- 33% alpha of Apple Music Red -->

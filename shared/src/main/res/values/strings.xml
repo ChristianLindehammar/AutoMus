@@ -5,9 +5,29 @@
     <string name="apple_music_auth_title">Apple Music Authentication</string>
     <string name="apple_music_auth_description">Sign in with your Apple ID to access Apple Music streaming services in AutoMus</string>
     <string name="please_sign_in">Please sign in to Apple Music</string>
-    <string name="sign_in_with_apple_music">Sign in with Apple Music</string>
-    <string name="cancel">Cancel</string>
+    <string name="sign_in_with_apple_music">SIGN IN WITH APPLE MUSIC</string>
+    <string name="cancel">CANCEL</string>
     <string name="auth_success">Authentication successful</string>
     <string name="auth_error">Authentication error</string>
     <string name="auth_canceled">Authentication canceled</string>
+    
+    <!-- Profile and auth status strings -->
+    <string name="not_signed_in">Not signed in</string>
+    <string name="tap_to_sign_in">Tap to sign in</string>
+    <string name="signed_in_as">Signed in as %s</string>
+    <string name="apple_music_user">Apple Music User</string>
+    <string name="tap_to_manage_account">Tap to manage account</string>
+    <string name="sign_out">Sign out</string>
+    <string name="manage_account">Manage Account</string>
+
+    <!-- QR Code Authentication -->
+    <string name="scan_qr_with_phone">Scan this QR code with your phone</string>
+    <string name="waiting_for_auth">Waiting for authentication…</string>
+    <string name="qr_auth_description">Open your Apple Music app on your phone, scan this QR code, and follow the instructions to connect your account to AutoMus.</string>
+    
+    <!-- SDK Authentication -->
+    <string name="connect_with_apple_music">Connect to Apple Music</string>
+    <string name="connect_description">Connecting to Apple Music enables streaming of your Apple Music library and playlists.</string>
+    <string name="tap_to_connect">Tap the button below to connect with Apple Music</string>
+    <string name="connecting">Connecting to Apple Music…</string>
 </resources>
